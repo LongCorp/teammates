@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: My test project
+
+paths:
+  /users:
+    get:
+      description: Gets all users
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  
+  /user:
+    get:
+      description: Gets user
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/User'
+
+components:
+  schemas:
+    User:
+      properties:
+        name:
+          type: string
+        id:
+          type: integer
