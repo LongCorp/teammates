@@ -1,12 +1,30 @@
 openapi: 3.0.3
 info:
   version: 1.0.0
-  title: My test project
-
+  title: TeamMates questionnaries API
+  contact:
+    name: LongCorp
+    email: LongCorp@gmail.com
+  
 paths:
-  /users:
+  /questionnaries:
     get:
-      description: Gets all users
+      description: Gets all questionnaries by pages
+      
+      parameters:
+        - name: page
+          in: query
+          description: Number of page
+          schema:
+            type: integer
+            format: int32
+        - name: limit
+          in: query
+          description: Limit items on page
+          schema:
+            type: integer
+            format: int32
+
       responses:
         "200":
           description: OK
@@ -15,24 +33,118 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
-  
-  /user:
-    get:
-      description: Gets user
+                  $ref: '#/components/schemas/QuestionnaireOut'
+                  
+        "400":
+          description: Invalid data passed
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Invalid data has passed
+    
+    post:
+      description: Create new questionnaire
+      
+      requestBody:
+      
+        description: Questionnaire
+        required: true
+        
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireIn'
+            
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/QuestionnaireOut'
+  
 
 components:
   schemas:
-    User:
+  
+    QuestionnaireOut:
+      description: Object of questionnaire
       properties:
         name:
           type: string
+          example: 'Wanna find teammate Dota 2'
         id:
-          type: integer
+          type: string
+          format: uuid
+        game:
+          $ref: '#/components/schemas/Game'
+        text:
+          type: string
+        image:
+          description: Image URL
+          type: string
+          format: uri
+        author:
+          $ref: '#/components/schemas/UserOut'
+    
+    QuestionnaireIn:
+      description: Object of questionnaire
+      properties:
+        name:
+          type: string
+          example: 'Wanna find teammate Dota 2'
+        game:
+          $ref: '#/components/schemas/Game'
+        text:
+          type: string
+        image:
+          type: string
+          format: binary
+        author:
+          $ref: '#/components/schemas/UserIn'
+    
+    UserOut:
+      properties:
+        name:
+          type: string
+          example: ProGamer228
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          example: Some words about author
+        icon:
+          type: string
+          format: uri
+    
+    UserIn:
+      properties:
+        name:
+          type: string
+          example: ProGamer228
+        description:
+          type: string
+          example: Some words about author
+        icon:
+          type: string
+          format: binary
+        
+    
+    Game:
+      type: string #enum object of games
+      enum:
+        - 'CS2'
+        - 'Dota 2'
+        - 'GTA 5'
+        - 'Volorant'
+          
+          
+          
+          
+          
+          
+          
+          
+          
