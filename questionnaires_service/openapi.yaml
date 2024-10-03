@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   version: 1.0.0
-  title: TeamMates questionnaries API
+  title: TeamMates questionnaires API
   contact:
     name: LongCorp
     email: LongCorp@gmail.com
@@ -9,7 +9,7 @@ info:
 paths:
   /questionnaries:
     get:
-      description: Gets all questionnaries by pages
+      description: Gets all questionnaires by pages
       
       parameters:
         - name: page
@@ -139,12 +139,5 @@ components:
         - 'Dota 2'
         - 'GTA 5'
         - 'Volorant'
-          
-          
-          
-          
-          
-          
-          
           
           
