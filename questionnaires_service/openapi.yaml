@@ -7,7 +7,7 @@ info:
     email: LongCorp@gmail.com
   
 paths:
-  /questionnaries:
+  /questionnaires:
     get:
       description: Gets all questionnaires by pages
       
@@ -70,6 +70,12 @@ components:
   
     QuestionnaireOut:
       description: Object of questionnaire
+      required:
+        - name
+        - id
+        - game
+        - text
+        - author_id
       properties:
         name:
           type: string
@@ -85,11 +91,17 @@ components:
           description: Image URL
           type: string
           format: uri
-        author:
-          $ref: '#/components/schemas/UserOut'
+        author_id:
+          type: string
+          format: uuid
     
     QuestionnaireIn:
       description: Object of questionnaire
+      required:
+        - name
+        - game
+        - text
+        - author_id
       properties:
         name:
           type: string
@@ -101,10 +113,14 @@ components:
         image:
           type: string
           format: binary
-        author:
-          $ref: '#/components/schemas/UserIn'
+        author_id:
+          type: string
+          format: uuid
     
     UserOut:
+      required:
+        - name
+        - id
       properties:
         name:
           type: string
@@ -120,10 +136,16 @@ components:
           format: uri
     
     UserIn:
+      required:
+        - name
+        - email
       properties:
         name:
           type: string
           example: ProGamer228
+        email:
+          type: string
+          format: email
         description:
           type: string
           example: Some words about author
