@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import aiomysql
 
+from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn
+
 
 class DBConnection(ABC):
     @staticmethod
@@ -88,3 +90,8 @@ class QuestionnairesDataBase(MySqlCommands):
     def __init__(self, database_data: dict):
         super().__init__(database_data)
 
+    async def get_by_page(self, page: int, limit: int) -> list[QuestionnaireOut]:
+        pass
+
+    async def add_questionnaire(self, questionnaire_in: QuestionnaireIn):
+        pass
