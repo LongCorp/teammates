@@ -95,8 +95,21 @@ class QuestionnairesDataBase(MySqlCommands):
     async def get_by_page(self, page: int, limit: int) -> list[QuestionnaireOut]:
         pass
 
-    async def add_questionnaire(self, questionnaire_in: QuestionnaireIn):
-        pass
+    async def add_questionnaire(self, questionnaire_in: QuestionnaireIn,
+                                image_path: str, questionnaire_id: UUID) -> QuestionnaireOut:
+        await self._create(
+            "INSERT INTO Questionnaires (author_public_id, id, header, description, image_path, game)"
+            " VALUES (%s, %s, %s, %s, %s, %s)",
+            (questionnaire_in.author_id, questionnaire_id, questionnaire_in.header,
+             questionnaire_in.description, image_path, questionnaire_in.game)
+        )
+        return QuestionnaireOut(
+            header=questionnaire_in.header,
+            game=questionnaire_in.game,
+            description=questionnaire_in.description,
+            author_id=questionnaire_in.author_id,
+            id=questionnaire_id
+        )
 
 
 class UsersDataBase(MySqlCommands):
@@ -104,4 +117,9 @@ class UsersDataBase(MySqlCommands):
         super().__init__(database_data)
 
     async def get_public_id(self, secret_id: UUID) -> int:
-        pass
+        response = await self._read(
+            "SELECT public_id FROM Users WHERE secret_id = %s",
+            (secret_id,)
+        )
+
+        return response[0]

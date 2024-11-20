@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import uuid
 from uuid import UUID
 from typing import List, Optional, Union, Annotated
 
 import jwt
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException, Header, UploadFile, Body
 from starlette import status
 
 from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn
 from questionnaires_service.src.entities.entities import DBEntities
+from questionnaires_service.src.utils.utils import save_questionnaire_image
 
 app = FastAPI(
     version='1.0.0',
@@ -40,10 +42,17 @@ async def get_questionnaires(
     response_model=Optional[QuestionnaireOut],
 )
 async def post_questionnaire(
-        questionnaire_in: QuestionnaireIn, secret_id: UUID = Depends(authenticate_user)
+        questionnaire_in: QuestionnaireIn = Body(...),
+        image: Optional[UploadFile] = None,
+        secret_id: UUID = Depends(authenticate_user)
 ) -> Optional[QuestionnaireOut]:
     current_author_id = await DBEntities.users_db.get_public_id(secret_id)
     if questionnaire_in.author_id == current_author_id:
-        response_questionnaire = await DBEntities.questionnaires_db.add_questionnaire(questionnaire_in)
+        questionnaire_id = uuid.uuid4()
+        image_path = await save_questionnaire_image(image, questionnaire_id)
+
+        response_questionnaire = await DBEntities.questionnaires_db.add_questionnaire(
+            questionnaire_in, image_path, questionnaire_id
+        )
         return response_questionnaire
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')

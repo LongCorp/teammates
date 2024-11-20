@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+from fastapi import UploadFile, Form
 
 
 class Game(Enum):
@@ -15,11 +17,17 @@ class Game(Enum):
 
 
 class QuestionnaireIn(BaseModel):
-    name: str = Field(example='Wanna find teammate Dota 2')
+    header: str = Field(example='Wanna find teammate Dota 2')
     game: Game
-    text: str
-    image: Optional[bytes] = None
+    description: str
     author_id: int
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_to_json(cls, value):
+        if isinstance(value, str):
+            return cls(**json.loads(value))
+        return value
 
 
 class QuestionnaireOut(QuestionnaireIn):
