@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from uuid import UUID
 from typing import List, Optional, Union, Annotated
 
 import jwt
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from starlette import status
 
 from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn
@@ -16,15 +17,16 @@ app = FastAPI(
 )
 
 
-def authenticate_questionnaire():
+def authenticate_user() -> UUID:
     try:
         ...
     except jwt.exceptions.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
 
 
-@app.get('/questionnaires',
-         response_model=List[QuestionnaireOut]
+@app.get(
+    '/questionnaires',
+    response_model=List[QuestionnaireOut]
 )
 async def get_questionnaires(
         page: Optional[int] = 1, limit: Optional[int] = 10
@@ -38,7 +40,10 @@ async def get_questionnaires(
     response_model=Optional[QuestionnaireOut],
 )
 async def post_questionnaire(
-        questionnaire_in: Annotated[QuestionnaireIn, Depends(authenticate_questionnaire)]
+        questionnaire_in: QuestionnaireIn, secret_id: UUID = Depends(authenticate_user)
 ) -> Optional[QuestionnaireOut]:
-    response_questionnaire = await DBEntities.questionnaires_db.add_questionnaire(questionnaire_in)
-    return response_questionnaire
+    current_author_id = await DBEntities.users_db.get_public_id(secret_id)
+    if questionnaire_in.author_id == current_author_id:
+        response_questionnaire = await DBEntities.questionnaires_db.add_questionnaire(questionnaire_in)
+        return response_questionnaire
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')

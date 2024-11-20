@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from uuid import UUID
+
 import aiomysql
 
 from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn
@@ -94,4 +96,12 @@ class QuestionnairesDataBase(MySqlCommands):
         pass
 
     async def add_questionnaire(self, questionnaire_in: QuestionnaireIn):
+        pass
+
+
+class UsersDataBase(MySqlCommands):
+    def __init__(self, database_data: dict):
+        super().__init__(database_data)
+
+    async def get_public_id(self, secret_id: UUID) -> int:
         pass

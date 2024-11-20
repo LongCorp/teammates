@@ -19,7 +19,7 @@ class QuestionnaireIn(BaseModel):
     game: Game
     text: str
     image: Optional[bytes] = None
-    author_id: UUID
+    author_id: int
 
 
 class QuestionnaireOut(QuestionnaireIn):
