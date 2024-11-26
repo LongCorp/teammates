@@ -19,7 +19,7 @@ app = FastAPI(
 )
 
 
-def authenticate_user() -> UUID:
+def authenticate_user(token: str = Depends(...)) -> UUID:
     try:
         ...
     except jwt.exceptions.InvalidTokenError:
