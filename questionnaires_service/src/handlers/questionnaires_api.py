@@ -31,10 +31,15 @@ def authenticate_user(token: str = Depends(...)) -> UUID:
     response_model=List[QuestionnaireOut]
 )
 async def get_questionnaires(
-        page: Optional[int] = 1, limit: Optional[int] = 10
+        user_id: int,
+        page: Optional[int] = 1, limit: Optional[int] = 10,
+        secret_id: UUID = Depends(authenticate_user)
 ) -> List[QuestionnaireOut] | str:
-    questionnaires = await DBEntities.questionnaires_db.get_by_page(page, limit)
-    return questionnaires
+    current_user_id = await DBEntities.users_db.get_public_id(secret_id)
+    if user_id == current_user_id:
+        questionnaires = await DBEntities.questionnaires_db.get_by_page(page, limit)
+        return questionnaires
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
 
 
 @app.post(
