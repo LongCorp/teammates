@@ -92,8 +92,11 @@ class QuestionnairesDataBase(MySqlCommands):
     def __init__(self, database_data: dict):
         super().__init__(database_data)
 
-    async def get_by_page(self, page: int, limit: int) -> list[QuestionnaireOut]:
-        pass
+    async def get_by_game(self, page: int, limit: int, game: str) -> list[QuestionnaireOut]:
+        result = await super()._read(
+            "SELECT * FROM Questionnaires WHERE game = %s ORDER BY RAND()",
+            (game, )
+        )
 
     async def add_questionnaire(self, questionnaire_in: QuestionnaireIn,
                                 image_path: str, questionnaire_id: UUID) -> QuestionnaireOut:
