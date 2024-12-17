@@ -8,7 +8,7 @@ import jwt
 from fastapi import FastAPI, Depends, HTTPException, Header, UploadFile, Body
 from starlette import status
 
-from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn
+from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn, Game
 from questionnaires_service.src.entities.entities import DBEntities
 from questionnaires_service.src.utils.utils import save_questionnaire_image
 
@@ -27,10 +27,11 @@ def authenticate_user(token: str = Depends(...)) -> UUID:
 
 
 @app.get(
-    '/questionnaires',
+    '/questionnaires/{game}',
     response_model=List[QuestionnaireOut]
 )
 async def get_questionnaires(
+        game: Game,
         user_id: int,
         page: Optional[int] = 1, limit: Optional[int] = 10,
         secret_id: UUID = Depends(authenticate_user)
@@ -38,7 +39,11 @@ async def get_questionnaires(
     current_user_id = await DBEntities.users_db.get_public_id(secret_id)
 
     if user_id == current_user_id:
-        questionnaires = await DBEntities.questionnaires_db.get_by_page(page, limit)
+        try:
+            questionnaires = cache.get(user_id)
+        except CacheMiss:
+            questionnaires = await DBEntities.questionnaires_db.get_by_game(game)
+            cache.set(user_id, questionnaires)
         return questionnaires
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
 
