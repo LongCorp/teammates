@@ -42,7 +42,8 @@ paths:
               schema:
                 type: string
                 example: Invalid data has passed
-    
+
+  /questionnaire:
     post:
       description: Create new questionnaire
       
@@ -71,10 +72,10 @@ components:
     QuestionnaireOut:
       description: Object of questionnaire
       required:
-        - name
+        - header
         - id
         - game
-        - text
+        - description
         - author_id
       properties:
         name:
@@ -85,74 +86,35 @@ components:
           format: uuid
         game:
           $ref: '#/components/schemas/Game'
-        text:
+        description:
           type: string
         image:
           description: Image URL
           type: string
           format: uri
         author_id:
-          type: string
-          format: uuid
+          type: integer
     
     QuestionnaireIn:
       description: Object of questionnaire
       required:
-        - name
+        - header
         - game
         - text
         - author_id
       properties:
-        name:
+        header:
           type: string
           example: 'Wanna find teammate Dota 2'
         game:
           $ref: '#/components/schemas/Game'
-        text:
+        description:
           type: string
+        author_id:
+          type: integer
         image:
           type: string
           format: binary
-        author_id:
-          type: string
-          format: uuid
-    
-    UserOut:
-      required:
-        - name
-        - id
-      properties:
-        name:
-          type: string
-          example: ProGamer228
-        id:
-          type: string
-          format: uuid
-        description:
-          type: string
-          example: Some words about author
-        icon:
-          type: string
-          format: uri
-    
-    UserIn:
-      required:
-        - name
-        - email
-      properties:
-        name:
-          type: string
-          example: ProGamer228
-        email:
-          type: string
-          format: email
-        description:
-          type: string
-          example: Some words about author
-        icon:
-          type: string
-          format: binary
-        
     
     Game:
       type: string #enum object of games
@@ -161,5 +123,3 @@ components:
         - 'Dota 2'
         - 'GTA 5'
         - 'Volorant'
-          
-          
