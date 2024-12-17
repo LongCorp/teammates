@@ -81,7 +81,7 @@ components:
         name:
           type: string
           example: 'Wanna find teammate Dota 2'
-        id:
+        questionnaire_id:
           type: string
           format: uuid
         game:

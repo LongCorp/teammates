@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+import json
 import uuid
 from uuid import UUID
-from typing import List, Optional, Union, Annotated
+from typing import List, Optional
+import aiohttp
 
-import jwt
-from fastapi import FastAPI, Depends, HTTPException, Header, UploadFile, Body
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, Body
+from fastapi.security.oauth2 import OAuth2PasswordBearer
+from pydantic import TypeAdapter
 from starlette import status
 
 from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn, Game
 from questionnaires_service.src.entities.entities import DBEntities
 from questionnaires_service.src.utils.utils import save_questionnaire_image
+from questionnaires_service.src.config import auth_service_url
 
 app = FastAPI(
     version='1.0.0',
@@ -18,12 +22,21 @@ app = FastAPI(
     contact={'name': 'LongCorp', 'email': 'LongCorp@gmail.com'},
 )
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-def authenticate_user(token: str = Depends(...)) -> UUID:
-    try:
-        ...
-    except jwt.exceptions.InvalidTokenError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
+
+async def authenticate_user(token: str = Depends(oauth2_scheme)) -> UUID:
+    async with aiohttp.ClientSession() as session:
+        response = await session.request(
+            "get", f"{auth_service_url}/get_id_by_token",
+            params={"token": token}
+        )
+
+        user_secret_id = await response.json()
+        user_secret_id = json.loads(user_secret_id).get("id", None)
+        if user_secret_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
+        return user_secret_id
 
 
 @app.get(
@@ -38,12 +51,16 @@ async def get_questionnaires(
 ) -> List[QuestionnaireOut] | str:
     current_user_id = await DBEntities.users_db.get_public_id(secret_id)
     if user_id == current_user_id:
-        try:
-            questionnaires = cache.get(user_id)
-        except CacheMiss:
+        questionnaires = await DBEntities.questionnaires_cache.get_questionnaires(user_id)
+
+        if questionnaires[0] is None:
+            type_adapter = TypeAdapter(list[QuestionnaireOut])
             questionnaires = await DBEntities.questionnaires_db.get_by_game(game)
-            cache.set(user_id, questionnaires)
-        return questionnaires
+            encoded = type_adapter.dump_json(questionnaires).decode("utf-8")
+            await DBEntities.questionnaires_cache.set_questionnaires(user_id, encoded)
+
+        start_index = (page - 1) * limit
+        return questionnaires[start_index:start_index + limit]
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
 
 

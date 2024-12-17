@@ -13,3 +13,15 @@ async def save_questionnaire_image(image: UploadFile | None, questionnaire_id: U
             await out_file.write(content)
         return path
     return ""
+
+
+def get_validated_dict_from_tuple(data: tuple) -> dict:
+    author_id, questionnaire_id, header, description, photo_path, game = data
+    return {
+        'header': header,
+        'questionnaire_id': questionnaire_id,
+        'photo_path': photo_path,
+        "description": description,
+        'author_id': author_id,
+        'game': game
+    }

@@ -9,3 +9,11 @@ db_data = {
     "db": config("DB_NAME"),
     "autocommit": True
 }
+
+redis_config = {
+    "url": "redis://localhost",
+    "decode_responses": True,
+    "encoding": "utf-8"
+}
+
+auth_service_url = config("AUTH_SERVICE_URL")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from enum import Enum
-from typing import Optional
+from typing import Optional, Iterable
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -31,4 +31,5 @@ class QuestionnaireIn(BaseModel):
 
 
 class QuestionnaireOut(QuestionnaireIn):
-    id: UUID
+    questionnaire_id: UUID
+    photo_path: str

@@ -3,7 +3,8 @@ from uuid import UUID
 
 import aiomysql
 
-from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn
+from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn, Game
+from questionnaires_service.src.utils.utils import get_validated_dict_from_tuple
 
 
 class DBConnection(ABC):
@@ -52,7 +53,7 @@ class MySqlCommands:
     async def __create_pool(self):
         self.__pool = await MySqlConnection.get_pool(self.__database_data)
 
-    async def _create(self, query: str, params: tuple|None = None):
+    async def _create(self, query: str, params: tuple | None = None):
         if not self.__pool:
             await self.__create_pool()
 
@@ -60,7 +61,7 @@ class MySqlCommands:
             async with conn.cursor() as cur:
                 await cur.execute(query, params)
 
-    async def _read(self, query: str, params: tuple|None = None):
+    async def _read(self, query: str, params: tuple | None = None):
         if not self.__pool:
             await self.__create_pool()
 
@@ -70,7 +71,7 @@ class MySqlCommands:
                 result = await cur.fetchall()
                 return result
 
-    async def _update(self, query: str, params: tuple|None = None):
+    async def _update(self, query: str, params: tuple | None = None):
         if not self.__pool:
             await self.__create_pool()
 
@@ -78,7 +79,7 @@ class MySqlCommands:
             async with conn.cursor() as cur:
                 await cur.execute(query, params)
 
-    async def _delete(self, query: str, params: tuple|None = None):
+    async def _delete(self, query: str, params: tuple | None = None):
         if not self.__pool:
             await self.__create_pool()
 
@@ -92,11 +93,14 @@ class QuestionnairesDataBase(MySqlCommands):
     def __init__(self, database_data: dict):
         super().__init__(database_data)
 
-    async def get_by_game(self, game: str) -> list[QuestionnaireOut]:
+    async def get_by_game(self, game: Game) -> list[QuestionnaireOut]:
         result = await super()._read(
             "SELECT * FROM Questionnaires WHERE game = %s ORDER BY RAND()",
-            (game, )
+            (game.value, )
         )
+        print(result)
+        result = [QuestionnaireOut(**get_validated_dict_from_tuple(i)) for i in result]
+        return result
 
     async def add_questionnaire(self, questionnaire_in: QuestionnaireIn,
                                 image_path: str, questionnaire_id: UUID) -> QuestionnaireOut:
@@ -104,14 +108,15 @@ class QuestionnairesDataBase(MySqlCommands):
             "INSERT INTO Questionnaires (author_public_id, id, header, description, image_path, game)"
             " VALUES (%s, %s, %s, %s, %s, %s)",
             (questionnaire_in.author_id, questionnaire_id, questionnaire_in.header,
-             questionnaire_in.description, image_path, questionnaire_in.game)
+             questionnaire_in.description, image_path, questionnaire_in.game.value)
         )
         return QuestionnaireOut(
             header=questionnaire_in.header,
-            game=questionnaire_in.game,
+            game=questionnaire_in.game.value,
             description=questionnaire_in.description,
             author_id=questionnaire_in.author_id,
-            id=questionnaire_id
+            photo_path=image_path,
+            questionnaire_id=questionnaire_id
         )
 
 
