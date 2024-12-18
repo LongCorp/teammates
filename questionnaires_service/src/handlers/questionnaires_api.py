@@ -33,10 +33,9 @@ async def authenticate_user(token: HTTPAuthorizationCredentials = Depends(auth_s
         )
 
         user_secret_id = await response.json()
-        user_secret_id = json.loads(user_secret_id).get("id", None)
         if user_secret_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
-    return user_secret_id
+    return UUID(user_secret_id)
 
 
 @app.get(

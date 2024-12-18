@@ -98,7 +98,6 @@ class QuestionnairesDataBase(MySqlCommands):
             "SELECT * FROM Questionnaires WHERE game = %s ORDER BY RAND()",
             (game.value, )
         )
-        print(result)
         result = [QuestionnaireOut(**get_validated_dict_from_tuple(i)) for i in result]
         return result
 
