@@ -7,7 +7,7 @@ from typing import List, Optional
 import aiohttp
 
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, Body
-from fastapi.security.oauth2 import OAuth2PasswordBearer
+from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import TypeAdapter
 from starlette import status
 
@@ -22,21 +22,21 @@ app = FastAPI(
     contact={'name': 'LongCorp', 'email': 'LongCorp@gmail.com'},
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+auth_scheme = HTTPBearer()
 
 
-async def authenticate_user(token: str = Depends(oauth2_scheme)) -> UUID:
+async def authenticate_user(token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UUID:
     async with aiohttp.ClientSession() as session:
         response = await session.request(
             "get", f"{auth_service_url}/get_id_by_token",
-            params={"token": token}
+            params={"token": token.credentials}
         )
 
         user_secret_id = await response.json()
         user_secret_id = json.loads(user_secret_id).get("id", None)
         if user_secret_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
-        return user_secret_id
+    return user_secret_id
 
 
 @app.get(

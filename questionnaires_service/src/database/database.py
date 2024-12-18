@@ -130,4 +130,4 @@ class UsersDataBase(MySqlCommands):
             (secret_id,)
         )
 
-        return response[0]
+        return response[0][0]
