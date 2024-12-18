@@ -3,3 +3,6 @@
 .idea
 *__pycache__
 .env
+*tests.py
+*questionnaires_photos
+*profile_photos
