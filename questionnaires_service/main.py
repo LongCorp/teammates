@@ -2,7 +2,7 @@ import asyncio
 
 import uvicorn
 
-from questionnaires_service.src.handlers.questionnaires_api import app
+from src.handlers.questionnaires_api import app
 
 
 async def main():

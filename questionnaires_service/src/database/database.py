@@ -3,8 +3,8 @@ from uuid import UUID
 
 import aiomysql
 
-from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn, Game
-from questionnaires_service.src.utils.utils import get_validated_dict_from_tuple
+from src.models.models import QuestionnaireOut, QuestionnaireIn, Game
+from src.utils.utils import get_validated_dict_from_tuple
 
 
 class DBConnection(ABC):

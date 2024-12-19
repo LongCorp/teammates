@@ -2,7 +2,7 @@
 *.DS_Store
 .idea
 *__pycache__
-.env
+questionnaires_service/.env
 *tests.py
 *questionnaires_photos
 *profile_photos

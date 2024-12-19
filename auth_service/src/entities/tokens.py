@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 
 import jwt
 
-from auth_service.src.config import JWT_SECRET
-from auth_service.src.models.models import UserModel
+from src.config import JWT_SECRET
+from src.models.models import UserModel
 
 
 class AccessToken:

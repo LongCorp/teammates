@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Final
 
-from auth_service.src.database.database import UsersDataBase
-from auth_service.src.config import db_data
+from src.database.database import UsersDataBase
+from src.config import db_data
 
 
 @dataclass(frozen=True)

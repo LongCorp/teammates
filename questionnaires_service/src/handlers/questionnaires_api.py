@@ -11,10 +11,10 @@ from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import TypeAdapter
 from starlette import status
 
-from questionnaires_service.src.models.models import QuestionnaireOut, QuestionnaireIn, Game
-from questionnaires_service.src.entities.entities import DBEntities
-from questionnaires_service.src.utils.utils import save_questionnaire_image
-from questionnaires_service.src.config import auth_service_url
+from src.models.models import QuestionnaireOut, QuestionnaireIn, Game
+from src.entities.entities import DBEntities
+from src.utils.utils import save_questionnaire_image
+from src.config import auth_service_url
 
 app = FastAPI(
     version='1.0.0',

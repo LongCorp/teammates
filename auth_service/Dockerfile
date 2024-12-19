@@ -1,12 +1,12 @@
 FROM python:3.11-alpine
 LABEL authors="decobraz"
 
-WORKDIR /questionnaires_service
+WORKDIR /auth_service
 
 COPY . .
 
 RUN pip install -r requirements.txt
 
-EXPOSE 8000
+EXPOSE 8100
 
 CMD ["python", "./main.py"]

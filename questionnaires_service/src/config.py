@@ -2,7 +2,7 @@ from decouple import config
 
 
 db_data = {
-    "host": 'localhost',
+    "host": config("DB_HOST"),
     "port": 3306,
     "user": 'root',
     "password": config("DB_PASSWORD"),
@@ -11,7 +11,7 @@ db_data = {
 }
 
 redis_config = {
-    "url": "redis://localhost",
+    "url": f"redis://{config('REDIS_HOST')}",
     "decode_responses": True,
     "encoding": "utf-8"
 }

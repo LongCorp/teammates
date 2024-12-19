@@ -5,7 +5,7 @@ import redis.asyncio as redis
 from pydantic import TypeAdapter
 from redis import Redis
 
-from questionnaires_service.src.models.models import QuestionnaireOut
+from src.models.models import QuestionnaireOut
 
 EXPIRATION_TIME = 3600
 
@@ -23,6 +23,7 @@ class RedisConnection:
     @staticmethod
     async def get_connection(redis_data: dict) -> Redis:
         if not RedisConnection.__con:
+            print(redis_data)
             RedisConnection.__create_connection(redis_data)
         return RedisConnection.__con
 

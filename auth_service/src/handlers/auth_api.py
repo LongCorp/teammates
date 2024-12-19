@@ -3,9 +3,9 @@ from __future__ import annotations
 from fastapi import FastAPI
 from jwt import DecodeError
 
-from auth_service.src.entities.tokens import AccessToken
-from auth_service.src.models.models import LoginModel
-from auth_service.src.entities.entities import DBEntities
+from src.entities.tokens import AccessToken
+from src.models.models import LoginModel
+from src.entities.entities import DBEntities
 
 app = FastAPI(
     version='1.0.0',

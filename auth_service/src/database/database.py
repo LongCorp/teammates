@@ -3,8 +3,8 @@ from uuid import UUID
 
 import aiomysql
 
-from auth_service.src.models.models import UserModel
-from auth_service.src.utils.utils import get_validated_user_dict_from_tuple
+from src.models.models import UserModel
+from src.utils.utils import get_validated_user_dict_from_tuple
 
 
 class DBConnection(ABC):

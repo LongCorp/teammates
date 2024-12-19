@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Final
 
-from questionnaires_service.src.database.cache import QuestionnairesCache
-from questionnaires_service.src.database.database import QuestionnairesDataBase, UsersDataBase
-from questionnaires_service.src.config import db_data, redis_config
+from src.database.cache import QuestionnairesCache
+from src.database.database import QuestionnairesDataBase, UsersDataBase
+from src.config import db_data, redis_config
 
 
 @dataclass(frozen=True)

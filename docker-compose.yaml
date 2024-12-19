@@ -1,0 +1,47 @@
+version: v2.29.2-desktop.2
+networks:
+  isolation-network:
+    driver: bridge
+
+services:
+  questionnaires_service:
+    build: ./questionnaires_service
+    container_name: questionnaires_service
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./questionnaires_service:/questionnaires_service
+    networks:
+      - isolation-network
+
+  auth_service:
+    build: ./auth_service
+    container_name: auth_service
+    ports:
+      - '8100:8100'
+    volumes:
+      - ./auth_service:/auth_service
+    networks:
+      - isolation-network
+
+  teammates_db:
+    image: mysql:latest
+    container_name: teammates_db
+    ports:
+      - '3306:3306'
+      - '33060:33060'
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "teammates"
+    volumes:
+      - ./teammates_db:/docker-entrypoint-initdb.d
+    networks:
+      - isolation-network
+
+  teammates_cache:
+    build: ./teammates_cache
+    container_name: teammates_cache
+    ports:
+      - '6379:6379'
+    networks:
+      - isolation-network
