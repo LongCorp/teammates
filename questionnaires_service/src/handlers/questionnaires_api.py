@@ -6,8 +6,9 @@ from uuid import UUID
 from typing import List, Optional
 import aiohttp
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, Body
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, Body, Request
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
 from pydantic import TypeAdapter
 from starlette import status
 
@@ -21,6 +22,8 @@ app = FastAPI(
     title='TeamMates questionnaires API',
     contact={'name': 'LongCorp', 'email': 'LongCorp@gmail.com'},
 )
+
+app.mount("/questionnaires_photos", StaticFiles(directory="./questionnaires_photos"), name="questionnaires_photos")
 
 auth_scheme = HTTPBearer()
 
@@ -68,15 +71,16 @@ async def get_questionnaires(
     response_model=Optional[QuestionnaireOut],
 )
 async def post_questionnaire(
+        request: Request,
         questionnaire_in: QuestionnaireIn = Body(...),
         image: Optional[UploadFile] = None,
-        secret_id: UUID = Depends(authenticate_user)
+        secret_id: UUID = Depends(authenticate_user),
 ) -> Optional[QuestionnaireOut]:
     current_author_id = await DBEntities.users_db.get_public_id(secret_id)
     if questionnaire_in.author_id == current_author_id:
         questionnaire_id = uuid.uuid4()
-        image_path = await save_questionnaire_image(image, questionnaire_id)
-
+        image_path = await save_questionnaire_image(image, questionnaire_id, str(request.url))
+        print(image_path)
         response_questionnaire = await DBEntities.questionnaires_db.add_questionnaire(
             questionnaire_in, image_path, questionnaire_id
         )

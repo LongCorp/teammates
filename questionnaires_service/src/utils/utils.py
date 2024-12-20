@@ -1,17 +1,17 @@
 from uuid import UUID
 import os
-
 import aiofiles
 from fastapi import UploadFile
 
 
-async def save_questionnaire_image(image: UploadFile | None, questionnaire_id: UUID) -> str:
+async def save_questionnaire_image(image: UploadFile | None, questionnaire_id: UUID, start_path: str) -> str:
     if image:
         path = os.path.abspath(f"./questionnaires_photos/{questionnaire_id}.jpg")
         async with aiofiles.open(path, "wb") as out_file:
             content = await image.read()
             await out_file.write(content)
-        return path
+        server_path = "".join(start_path.split("/")[:-1]) + f"/questionnaires_photos/{questionnaire_id}.jpg"
+        return server_path
     return ""
 
 
