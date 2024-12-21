@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import json
 import uuid
 from uuid import UUID
 from typing import List, Optional
 import aiohttp
+import logging
 
+from aiohttp import ConnectionTimeoutError
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, Body, Request
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
@@ -16,6 +17,8 @@ from src.models.models import QuestionnaireOut, QuestionnaireIn, Game
 from src.entities.entities import DBEntities
 from src.utils.utils import save_questionnaire_image
 from src.config import auth_service_url
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     version='1.0.0',
@@ -29,16 +32,18 @@ auth_scheme = HTTPBearer()
 
 
 async def authenticate_user(token: HTTPAuthorizationCredentials = Depends(auth_scheme)) -> UUID:
-    async with aiohttp.ClientSession() as session:
-        response = await session.request(
-            "get", f"{auth_service_url}/get_id_by_token",
-            params={"token": token.credentials}
-        )
-
-        user_secret_id = await response.json()
-        if user_secret_id is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
-    return UUID(user_secret_id)
+    try:
+        async with aiohttp.ClientSession() as session:
+            response = await session.request(
+                "get", f"{auth_service_url}/get_id_by_token",
+                params={"token": token.credentials}
+            )
+            user_secret_id = await response.json()
+            if user_secret_id is None:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
+        return UUID(user_secret_id)
+    except ConnectionError as e:
+        logger.error("Error while response from auth service", exc_info=e)
 
 
 @app.get(
@@ -54,7 +59,6 @@ async def get_questionnaires(
     current_user_id = await DBEntities.users_db.get_public_id(secret_id)
     if user_id == current_user_id:
         questionnaires = await DBEntities.questionnaires_cache.get_questionnaires(user_id)
-
         if questionnaires[0] is None:
             type_adapter = TypeAdapter(list[QuestionnaireOut])
             questionnaires = await DBEntities.questionnaires_db.get_by_game(game)
@@ -80,7 +84,6 @@ async def post_questionnaire(
     if questionnaire_in.author_id == current_author_id:
         questionnaire_id = uuid.uuid4()
         image_path = await save_questionnaire_image(image, questionnaire_id, str(request.url))
-        print(image_path)
         response_questionnaire = await DBEntities.questionnaires_db.add_questionnaire(
             questionnaire_in, image_path, questionnaire_id
         )
