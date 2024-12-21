@@ -1,10 +1,14 @@
+import logging
 from abc import ABC, abstractmethod
 from uuid import UUID
 
 import aiomysql
+from fastapi import HTTPException
 
 from src.models.models import QuestionnaireOut, QuestionnaireIn, Game
 from src.utils.utils import get_validated_dict_from_tuple
+
+logger = logging.getLogger(__name__)
 
 
 class DBConnection(ABC):
@@ -94,39 +98,56 @@ class QuestionnairesDataBase(MySqlCommands):
         super().__init__(database_data)
 
     async def get_by_game(self, game: Game) -> list[QuestionnaireOut]:
-        result = await super()._read(
-            "SELECT * FROM Questionnaires WHERE game = %s ORDER BY RAND()",
-            (game.value, )
-        )
-        result = [QuestionnaireOut(**get_validated_dict_from_tuple(i)) for i in result]
-        return result
+        try:
+            logger.info("Getting questionnaires from db for game '%s'", game.value)
+            result = await super()._read(
+                "SELECT * FROM Questionnaires WHERE game = %s ORDER BY RAND()",
+                (game.value, )
+            )
+            result = [QuestionnaireOut(**get_validated_dict_from_tuple(i)) for i in result]
+            logger.info("Done getting questionnaires from db for game '%s'", game.value)
+            return result
+        except Exception as e:
+            logger.error("Error while getting questionnaires from db for game '%s'", game.value, exc_info=e)
+            raise HTTPException(500)
 
     async def add_questionnaire(self, questionnaire_in: QuestionnaireIn,
                                 image_path: str, questionnaire_id: UUID) -> QuestionnaireOut:
-        await self._create(
-            "INSERT INTO Questionnaires (author_public_id, id, header, description, image_path, game)"
-            " VALUES (%s, %s, %s, %s, %s, %s)",
-            (questionnaire_in.author_id, questionnaire_id, questionnaire_in.header,
-             questionnaire_in.description, image_path, questionnaire_in.game.value)
-        )
-        return QuestionnaireOut(
-            header=questionnaire_in.header,
-            game=questionnaire_in.game.value,
-            description=questionnaire_in.description,
-            author_id=questionnaire_in.author_id,
-            photo_path=image_path,
-            questionnaire_id=questionnaire_id
-        )
+        try:
+            logger.info("Adding questionnaire (%s) to db", questionnaire_in)
+            await self._create(
+                "INSERT INTO Questionnaires (author_public_id, id, header, description, image_path, game)"
+                " VALUES (%s, %s, %s, %s, %s, %s)",
+                (questionnaire_in.author_id, questionnaire_id, questionnaire_in.header,
+                 questionnaire_in.description, image_path, questionnaire_in.game.value)
+            )
+            logger.info("Done adding questionnaire (%s) to db", questionnaire_in)
+            return QuestionnaireOut(
+                header=questionnaire_in.header,
+                game=questionnaire_in.game.value,
+                description=questionnaire_in.description,
+                author_id=questionnaire_in.author_id,
+                photo_path=image_path,
+                questionnaire_id=questionnaire_id
+            )
+        except Exception as e:
+            logger.error("Error while adding qquestionnaire %s to db", questionnaire_in, exc_info=e)
+            raise HTTPException(500)
 
 
 class UsersDataBase(MySqlCommands):
     def __init__(self, database_data: dict):
         super().__init__(database_data)
 
-    async def get_public_id(self, secret_id: UUID) -> int:
-        response = await self._read(
-            "SELECT public_id FROM Users WHERE secret_id = %s",
-            (secret_id,)
-        )
-
-        return response[0][0]
+    async def get_public_id(self, secret_id: UUID) -> int | None:
+        try:
+            logger.info("Getting public id for user %s", secret_id)
+            response = await self._read(
+                "SELECT public_id FROM Users WHERE secret_id = %s",
+                (secret_id,)
+            )
+            logger.info("Done getting public id for user %s", secret_id)
+            return response[0][0]
+        except IndexError as e:
+            logger.error("Can't get public_id for user with secret_id %s", secret_id, exc_info=e)
+            return None
