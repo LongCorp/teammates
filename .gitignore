@@ -1,8 +1,9 @@
-.venv
+*.venv
 *.DS_Store
-.idea
+*.idea
 *__pycache__
 *.env
 *tests.py
 *questionnaires_photos
 *profile_photos
+*.log

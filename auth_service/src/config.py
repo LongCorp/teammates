@@ -2,6 +2,7 @@ from decouple import config
 
 
 JWT_SECRET = config('JWT_SECRET')
+PASSWORD_SALT = config('PASSWORD_SALT')
 
 db_data = {
     "host": config("DB_HOST"),

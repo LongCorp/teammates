@@ -1,15 +1,27 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, EmailStr, Field
+from hashlib import sha256
+
+from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationInfo
+from src.config import PASSWORD_SALT
 
 
 class RegisterModel(BaseModel):
-    pass
+    login: str
+    password: str
+    email: EmailStr
 
 
 class LoginModel(BaseModel):
     login: str
     password: str
+
+    @field_validator('password', mode='after')
+    @classmethod
+    def validate_password(cls, value: str, info: ValidationInfo) -> str:
+        string_to_hash = value+info.data["login"]+PASSWORD_SALT
+        hashed_value = sha256(string_to_hash.encode()).hexdigest()
+        return hashed_value
 
 
 class UserModel(BaseModel):

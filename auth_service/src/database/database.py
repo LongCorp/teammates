@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 import aiomysql
+from pydantic import ValidationError
 
 from src.models.models import UserModel
 from src.utils.utils import get_validated_user_dict_from_tuple
@@ -100,10 +101,24 @@ class UsersDataBase(MySqlCommands):
 
         return response[0][0]
 
-    async def get_user(self, nickname: str) -> UserModel:
-        response = await self._read(
-            "SELECT * FROM Users WHERE nickname = %s",
-            (nickname,)
-        )
+    async def get_password_hash_by_nickname(self, nickname: str) -> int | None:
+        try:
+            response = await self._read(
+                "SELECT password FROM Users JOIN UsersPasswords on Users.public_id WHERE nickname = %s",
+                (nickname,)
+            )
 
-        return UserModel(**get_validated_user_dict_from_tuple(response[0]))
+            return response[0][0]
+        except IndexError:
+            return None
+
+    async def get_user_by_nickname(self, nickname: str) -> UserModel | None:
+        try:
+            response = await self._read(
+                "SELECT * FROM Users WHERE nickname = %s",
+                (nickname,)
+            )
+
+            return UserModel(**get_validated_user_dict_from_tuple(response[0]))
+        except (IndexError, ValidationError):
+            return None
