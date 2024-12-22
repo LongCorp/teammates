@@ -1,0 +1,14 @@
+[2024-12-22 12:39:11] models:39 WARNING - email-validator not installed, email fields will be treated as str.
+To install, run: pip install email-validator
+[2024-12-22 12:55:45] database:144    INFO - Getting public id for user fb6d4b27-5cb1-4207-bce1-8b461921142e
+[2024-12-22 12:55:45] database:149    INFO - Done getting public id for user fb6d4b27-5cb1-4207-bce1-8b461921142e
+[2024-12-22 12:55:45] cache:62    INFO - Getting questionnaires from cache for user 1
+[2024-12-22 12:55:45] cache:69    INFO - Done getting questionnaires from cache for user 1, total questionnaires: 1
+[2024-12-22 12:55:45] database:102    INFO - Getting questionnaires from db for game 'CS2'
+[2024-12-22 12:55:45] database:108    INFO - Done getting questionnaires from db for game 'CS2'
+[2024-12-22 12:55:45] cache:48    INFO - Adding questionnaires to cache for user 1
+[2024-12-22 12:55:45] cache:52    INFO - Done adding questionnaires to cache for user 1
+[2024-12-22 13:01:16] database:144    INFO - Getting public id for user fb6d4b27-5cb1-4207-bce1-8b461921142e
+[2024-12-22 13:01:16] database:149    INFO - Done getting public id for user fb6d4b27-5cb1-4207-bce1-8b461921142e
+[2024-12-22 13:01:16] cache:62    INFO - Getting questionnaires from cache for user 1
+[2024-12-22 13:01:16] cache:69    INFO - Done getting questionnaires from cache for user 1, total questionnaires: 21

@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+import json
+from http import HTTPStatus
+from http.client import HTTPException
+
+from fastapi import FastAPI, Response
 from jwt import DecodeError
 
 from src.entities.tokens import AccessToken
-from src.models.models import LoginModel
+from src.models.models import LoginModel, UserModel
 from src.entities.entities import DBEntities
 
 app = FastAPI(
@@ -14,11 +18,20 @@ app = FastAPI(
 )
 
 
-@app.post("/login")
+@app.post("/login", response_model=UserModel)
 async def login(login_info: LoginModel):
-    user = await DBEntities.users_db.get_user(login_info.login)
-    token = AccessToken.create_token(user, 3600)
-    return {"token": token}
+    password_from_db = await DBEntities.users_db.get_password_hash_by_nickname(
+        login_info.login
+    )
+    if password_from_db == login_info.password:
+        user = await DBEntities.users_db.get_user_by_nickname(login_info.login)
+        token = AccessToken.create_token(user, 3600)
+        return Response(
+            status_code=HTTPStatus.OK,
+            content=json.dumps({"user": user.model_dump()}),
+            headers={"Authorization": f"Bearer {token}"}
+        )
+    raise HTTPException(401, "Not authenticated")
 
 
 @app.post("/register")
