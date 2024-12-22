@@ -5,8 +5,11 @@ from hashlib import sha256
 from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationInfo
 from src.config import PASSWORD_SALT
 
+
 class RegisterModel(BaseModel):
-    pass
+    login: str
+    password: str
+    email: EmailStr
 
 
 class LoginModel(BaseModel):
