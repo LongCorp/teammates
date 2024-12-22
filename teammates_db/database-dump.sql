@@ -1,10 +1,6 @@
 -- MySQL dump 10.13  Distrib 9.1.0, for macos14 (arm64)
 --
-<<<<<<< Updated upstream
--- Host: 127.0.0.1    Database: teammates
-=======
 -- Host: 127.0.0.1    Database: 
->>>>>>> Stashed changes
 -- ------------------------------------------------------
 -- Server version	9.0.1
 
@@ -14,19 +10,14 @@
 /*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
-<<<<<<< Updated upstream
-=======
 /*!50606 SET @OLD_INNODB_STATS_AUTO_RECALC=@@INNODB_STATS_AUTO_RECALC */;
 /*!50606 SET GLOBAL INNODB_STATS_AUTO_RECALC=OFF */;
->>>>>>> Stashed changes
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
-<<<<<<< Updated upstream
-=======
 -- Current Database: `mysql`
 --
 
@@ -1083,7 +1074,6 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `teammates` /*!40100 DEFAULT CHARACTER 
 USE `teammates`;
 
 --
->>>>>>> Stashed changes
 -- Table structure for table `Questionnaires`
 --
 
@@ -1165,10 +1155,7 @@ INSERT INTO `UsersPasswords` VALUES (1,'d620fe2cdb06cfd0eff49a33db7c876ebb64ac51
 /*!40000 ALTER TABLE `UsersPasswords` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-<<<<<<< Updated upstream
-=======
 /*!50606 SET GLOBAL INNODB_STATS_AUTO_RECALC=@OLD_INNODB_STATS_AUTO_RECALC */;
->>>>>>> Stashed changes
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
@@ -1178,8 +1165,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-<<<<<<< Updated upstream
--- Dump completed on 2024-12-22 21:48:57
-=======
--- Dump completed on 2024-12-22 21:55:18
->>>>>>> Stashed changes
+-- Dump completed on 2024-12-22 22:40:50
