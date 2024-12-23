@@ -4,6 +4,7 @@ from uuid import UUID
 
 import aiomysql
 from fastapi import HTTPException
+from pymysql import IntegrityError
 
 from src.models.models import QuestionnaireOut, QuestionnaireIn, Game
 from src.utils.utils import get_validated_dict_from_tuple
@@ -130,8 +131,11 @@ class QuestionnairesDataBase(MySqlCommands):
                 photo_path=image_path,
                 questionnaire_id=questionnaire_id
             )
+        except IntegrityError as e:
+            logger.error("Error while adding questionnaire %s to db", questionnaire_in, exc_info=e)
+            raise HTTPException(400)
         except Exception as e:
-            logger.error("Error while adding qquestionnaire %s to db", questionnaire_in, exc_info=e)
+            logger.error("Error while adding questionnaire %s to db", questionnaire_in, exc_info=e)
             raise HTTPException(500)
 
 

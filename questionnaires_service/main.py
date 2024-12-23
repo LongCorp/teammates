@@ -4,7 +4,9 @@ import logging
 import uvicorn
 
 from src.entities.entities import LoggerHandlers
-from src.handlers.questionnaires_api import app
+from src.handlers.main_route import app
+from src.handlers.questionnaire_route import questionnaire_router
+from src.handlers.questionnaires_route import questionnaires_router
 
 
 def configure_logging():
@@ -17,6 +19,8 @@ def configure_logging():
 
 
 async def main():
+    app.include_router(questionnaires_router)
+    app.include_router(questionnaire_router)
     configure_logging()
     config = uvicorn.Config(app=app, host="0.0.0.0", port=8000, loop="asyncio", reload=True)
     server = uvicorn.Server(config)
