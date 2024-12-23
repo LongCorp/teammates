@@ -6,7 +6,6 @@ from typing import List, Optional
 import aiohttp
 import logging
 
-from aiohttp import ConnectionTimeoutError
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, Body, Request
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
@@ -58,12 +57,14 @@ async def get_questionnaires(
 ) -> List[QuestionnaireOut] | str:
     current_user_id = await DBEntities.users_db.get_public_id(secret_id)
     if user_id == current_user_id:
-        questionnaires = await DBEntities.questionnaires_cache.get_questionnaires(user_id)
+        questionnaires = await DBEntities.questionnaires_cache.get_questionnaires(user_id, game)
+
         if questionnaires[0] is None:
             type_adapter = TypeAdapter(list[QuestionnaireOut])
             questionnaires = await DBEntities.questionnaires_db.get_by_game(game)
             encoded = type_adapter.dump_json(questionnaires).decode("utf-8")
-            await DBEntities.questionnaires_cache.set_questionnaires(user_id, encoded)
+
+            await DBEntities.questionnaires_cache.set_questionnaires(user_id, game, encoded)
 
         start_index = (page - 1) * limit
         return questionnaires[start_index:start_index + limit]
