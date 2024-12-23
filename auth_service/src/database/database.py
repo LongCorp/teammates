@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from uuid import UUID
 
@@ -7,6 +8,7 @@ from pydantic import ValidationError
 from src.models.models import UserModel
 from src.utils.utils import get_validated_user_dict_from_tuple
 
+logger = logging.getLogger(__name__)
 
 class DBConnection(ABC):
     @staticmethod
@@ -93,32 +95,41 @@ class UsersDataBase(MySqlCommands):
     def __init__(self, database_data: dict):
         super().__init__(database_data)
 
-    async def get_public_id(self, secret_id: UUID) -> int:
-        response = await self._read(
-            "SELECT public_id FROM Users WHERE secret_id = %s",
-            (secret_id,)
-        )
-
-        return response[0][0]
+    async def get_public_id(self, secret_id: UUID) -> int | None:
+        try:
+            logger.info("Getting public id for user %s", secret_id)
+            response = await self._read(
+                "SELECT public_id FROM Users WHERE secret_id = %s",
+                (secret_id,)
+            )
+            logger.info("Done getting public id for user %s", secret_id)
+            return response[0][0]
+        except IndexError as e:
+            logger.error("Can't get public_id for user with secret_id %s", secret_id, exc_info=e)
+            return None
 
     async def get_password_hash_by_nickname(self, nickname: str) -> int | None:
         try:
+            logger.info("Getting password hash for user %s", nickname)
             response = await self._read(
                 "SELECT password FROM Users JOIN UsersPasswords on Users.public_id WHERE nickname = %s",
                 (nickname,)
             )
-
+            logger.info("Done getting password hash for user %s", nickname)
             return response[0][0]
         except IndexError:
+            logger.error("Can't get password hash for user %s", nickname)
             return None
 
     async def get_user_by_nickname(self, nickname: str) -> UserModel | None:
         try:
+            logger.info("Getting user by nickname for user %s", nickname)
             response = await self._read(
                 "SELECT * FROM Users WHERE nickname = %s",
                 (nickname,)
             )
-
+            logger.info("Done getting user by nickname for user %s", nickname)
             return UserModel(**get_validated_user_dict_from_tuple(response[0]))
         except (IndexError, ValidationError):
+            logger.error("Can't get user by nickname for user %s", nickname)
             return None
