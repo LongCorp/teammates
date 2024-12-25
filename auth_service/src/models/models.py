@@ -39,3 +39,7 @@ class UserModel(BaseModel):
     email: EmailStr
     description: Optional[str]
     image_path: Optional[str]
+
+
+class UpdateTokensModel(BaseModel):
+    refresh_token: str

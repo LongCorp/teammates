@@ -31,6 +31,21 @@ class RefreshToken:
 
         return RefreshToken(jwt.encode(payload=data, key=JWT_SECRET, algorithm='HS256'))
 
+    @staticmethod
+    def from_id(secret_id: str, ttl: int):
+        current_timestamp = datetime.timestamp((datetime.now(tz=timezone.utc)))
+
+        data = dict(
+            iss='LongCorp@auth_service',
+            sub=secret_id,
+            jti=str(uuid.uuid4()),
+            iat=current_timestamp,
+            nbf=current_timestamp,
+            exp=current_timestamp + ttl
+        )
+
+        return RefreshToken(jwt.encode(payload=data, key=JWT_SECRET, algorithm='HS256'))
+
     def __str__(self):
         return self.__token
 

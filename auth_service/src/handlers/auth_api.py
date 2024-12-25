@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import json
 import logging
-from http import HTTPStatus
 from fastapi import HTTPException
 
 from fastapi import FastAPI, Response
 from jwt import DecodeError
 
 from src.entities.tokens import AccessToken, RefreshToken
-from src.models.models import LoginModel, UserModel, RegisterModel
+from src.models.models import LoginModel, RegisterModel, UpdateTokensModel
 from src.entities.entities import DBEntities
 
 logger = logging.getLogger(__name__)
@@ -86,5 +85,24 @@ async def get_id_by_token(token: str):
 
 
 @app.post("/update_tokens")
-async def update_tokens(tokens: dict):
-    pass
+async def update_tokens(tokens_input: UpdateTokensModel):
+    logger.info("Received request to update tokens")
+    try:
+        secret_id = RefreshToken(tokens_input.refresh_token).get_secret_id()
+
+        new_refresh_token = RefreshToken.from_id(secret_id, 86400)
+        new_access_token = AccessToken.from_refresh_token(new_refresh_token, 3600)
+        return Response(
+            status_code=201,
+            content=json.dumps({
+                "refresh_token": str(new_refresh_token),
+                "access_token": str(new_access_token),
+            })
+        )
+
+    except (KeyError, DecodeError):
+        logger.info("Bad request for update tokens")
+        raise HTTPException(401, "Not authenticated")
+    except Exception as e:
+        logger.error("Error while updating tokens", exc_info=e)
+        raise HTTPException(500, "Server error")
