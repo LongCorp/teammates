@@ -1,11 +1,14 @@
+import asyncio
 import logging
+import uuid
 from abc import ABC, abstractmethod
 from uuid import UUID
 
 import aiomysql
 from pydantic import ValidationError
+from pymysql import IntegrityError
 
-from src.models.models import UserModel
+from src.models.models import UserModel, RegisterModel
 from src.utils.utils import get_validated_user_dict_from_tuple
 
 logger = logging.getLogger(__name__)
@@ -54,7 +57,9 @@ class MySqlCommands:
         self.__database_data = database_data
 
     async def __create_pool(self):
+        logger.info("Creating MySql pool")
         self.__pool = await MySqlConnection.get_pool(self.__database_data)
+        logger.info("MySql pool created")
 
     async def _create(self, query: str, params: tuple | None = None):
         if not self.__pool:
@@ -112,7 +117,7 @@ class UsersDataBase(MySqlCommands):
         try:
             logger.info("Getting password hash for user %s", nickname)
             response = await self._read(
-                "SELECT password FROM Users JOIN UsersPasswords on Users.public_id WHERE nickname = %s",
+                "SELECT password FROM Users JOIN UsersPasswords on Users.public_id WHERE Users.nickname = %s ",
                 (nickname,)
             )
             logger.info("Done getting password hash for user %s", nickname)
@@ -128,8 +133,30 @@ class UsersDataBase(MySqlCommands):
                 "SELECT * FROM Users WHERE nickname = %s",
                 (nickname,)
             )
+            user = UserModel(**get_validated_user_dict_from_tuple(response[0]))
             logger.info("Done getting user by nickname for user %s", nickname)
-            return UserModel(**get_validated_user_dict_from_tuple(response[0]))
+            return user
         except (IndexError, ValidationError):
             logger.error("Can't get user by nickname for user %s", nickname)
+            return None
+
+    async def create_user(self, register_data: RegisterModel) -> UserModel | None:
+        try:
+            logger.info("Started creating new user %s", register_data.login)
+
+            await self._create(
+                "START transaction;"
+                "SET @nickname := %s COLLATE utf8mb4_0900_ai_ci;"
+                "INSERT INTO Users (secret_id, nickname, email) VALUES (%s, @nickname, %s);"
+                "SET @user_id := (SELECT public_id FROM Users WHERE nickname = (SELECT @nickname));"
+                "INSERT INTO UsersPasswords VALUES (@user_id, %s);"
+                "COMMIT;",
+                (register_data.login, uuid.uuid4(), register_data.email, register_data.password)
+            )
+            logger.info("Done creating new user %s", register_data.login)
+
+            created_user = await self.get_user_by_nickname(register_data.login)
+            return created_user
+        except Exception as e:
+            logger.error("Error while creating new user %s", register_data.login, exc_info=e)
             return None
