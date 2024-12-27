@@ -45,3 +45,13 @@ services:
       - '6379:6379'
     networks:
       - isolation-network
+
+  users_service:
+    build: ./users_service
+    container_name: users_service
+    ports:
+      - '8200:8200'
+    volumes:
+      - ./users_service:/users_service
+    networks:
+      - isolation-network
