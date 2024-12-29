@@ -109,3 +109,17 @@ class UsersDataBase(MySqlCommands):
         except (IndexError, ValidationError):
             logger.error("Can't get user by nickname for user %s", nickname)
             return None
+
+    async def get_user_by_public_id(self, public_id: str) -> UserModel | None:
+        try:
+            logger.info("Getting user by public ID for user %s", public_id)
+            response = await self._read(
+                "SELECT * FROM Users WHERE public_id = %s",
+                (public_id,)
+            )
+            user = UserModel(**get_validated_user_dict_from_tuple(response[0]))
+            logger.info("Done getting user by public ID for user %s", public_id)
+            return user
+        except (IndexError, ValidationError):
+            logger.error("Can't get user by public ID for user %s", public_id)
+            return None
