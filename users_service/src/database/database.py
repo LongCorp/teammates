@@ -9,6 +9,7 @@ from src.utils.utils import get_validated_user_dict_from_tuple
 
 logger = logging.getLogger(__name__)
 
+
 class DBConnection(ABC):
     @staticmethod
     @abstractmethod
@@ -110,7 +111,7 @@ class UsersDataBase(MySqlCommands):
             logger.error("Can't get user by nickname for user %s", nickname)
             return None
 
-    async def get_user_by_public_id(self, public_id: str) -> UserModel | None:
+    async def get_user_by_public_id(self, public_id: int) -> UserModel | None:
         try:
             logger.info("Getting user by public ID for user %s", public_id)
             response = await self._read(
