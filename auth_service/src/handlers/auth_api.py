@@ -5,7 +5,7 @@ import logging
 from fastapi import HTTPException
 
 from fastapi import FastAPI, Response
-from jwt import DecodeError
+from jwt import DecodeError, ExpiredSignatureError
 
 from src.entities.tokens import AccessToken, RefreshToken
 from src.models.models import LoginModel, RegisterModel, UpdateTokensModel
@@ -78,8 +78,8 @@ async def get_id_by_token(token: str):
         token = AccessToken(token)
         secret_key = token.get_secret_key()
         logger.info("ID by token successfully received")
-    except DecodeError:
-        logger.error("Error getting ID by token")
+    except (DecodeError, ExpiredSignatureError):
+        logger.error("Error getting ID by token --- invalid token")
         secret_key = None
     return secret_key
 
@@ -100,7 +100,7 @@ async def update_tokens(tokens_input: UpdateTokensModel):
             })
         )
 
-    except (KeyError, DecodeError):
+    except (KeyError, DecodeError, ExpiredSignatureError):
         logger.info("Bad request for update tokens")
         raise HTTPException(401, "Not authenticated")
     except Exception as e:

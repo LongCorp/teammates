@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 import redis.asyncio as redis
 from pydantic import TypeAdapter
@@ -40,36 +40,41 @@ class QuestionnairesCache:
     async def __create_connection(self):
         self.__con = await RedisConnection.get_connection(self.__init_data)
 
-    async def set_questionnaires(self, user_id: int, game: Game, questionnaires: List[QuestionnaireOut]):
+    async def set_questionnaires(
+            self,
+            user_id: int,
+            *args,
+            value: str
+    ):
         if not self.__con:
             await self.__create_connection()
 
         try:
-            logger.info("Adding questionnaires to cache for user %d", user_id)
+            logger.info("Adding questionnaires to cache for user %d %s", user_id, args)
             async with self.__con.pipeline() as connection:
-                key = ':'.join([str(user_id), game.value])
-                await connection.set(key, questionnaires).execute()
+                key = ':'.join([str(user_id), *[str(i) for i in args if i is not None]])
+                await connection.set(key, value).execute()
                 await connection.expire(user_id, EXPIRATION_TIME).execute()
-            logger.info("Done adding questionnaires to cache for user %d", user_id)
+            logger.info("Done adding questionnaires to cache for user %d %s", user_id, args)
             return True
         except Exception as e:
             logger.error("Error while adding questionnaires to cache for user %d", user_id, exc_info=e)
 
-    async def get_questionnaires(self, user_id: int, game: Game) -> List[QuestionnaireOut] | List[None]:
+    async def get_questionnaires(self, user_id: int, *args) -> List[QuestionnaireOut] | List[None]:
         if not self.__con:
             await self.__create_connection()
 
         try:
-            logger.info("Getting questionnaires from cache for user %d and game '%s'", user_id, game.value)
+            logger.info("Getting questionnaires from cache for user %d and %s", user_id, args)
             async with self.__con.pipeline() as connection:
-                key = ':'.join([str(user_id), game.value])
+                key = ':'.join([str(user_id), *[str(i) for i in args if i is not None]])
                 result = await connection.get(key).execute()
 
             if result[0] is not None:
                 type_adapter = TypeAdapter(list[QuestionnaireOut])
                 result = type_adapter.validate_json(result[0])
-            logger.info("Done getting questionnaires from cache for user %d and game %s, total questionnaires: %d",
-                        user_id, game.value, len(result))
+            logger.info("Done getting questionnaires from cache for user %d and %s, total questionnaires: %d",
+                        user_id, args, len(result))
             return result if len(result) > 0 else [None]
         except Exception as e:
             logger.error("Error while reading from cache", exc_info=e)

@@ -22,6 +22,7 @@ class QuestionnaireIn(BaseModel):
     description: str
     author_id: int
 
+
     @model_validator(mode='before')
     @classmethod
     def validate_to_json(cls, value):

@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Optional
 from uuid import UUID
 
 import aiomysql
@@ -98,18 +99,43 @@ class QuestionnairesDataBase(MySqlCommands):
     def __init__(self, database_data: dict):
         super().__init__(database_data)
 
-    async def get_by_game(self, game: Game) -> list[QuestionnaireOut]:
+    async def get_questionnaires(
+            self,
+            game: Optional[Game] = None,
+            author_id: Optional[int] = None,
+            questionnaire_id: Optional[UUID] = None) -> list[QuestionnaireOut]:
         try:
-            logger.info("Getting questionnaires from db for game '%s'", game.value)
-            result = await super()._read(
-                "SELECT * FROM Questionnaires WHERE game = %s ORDER BY RAND()",
-                (game.value, )
+            logger.info(
+                "Getting questionnaires from db for (%s, %s, %s)",
+                game, author_id, questionnaire_id
             )
+
+            query = "SELECT * FROM Questionnaires WHERE 1=1"
+            params = set()
+            if game:
+                query += " AND game=%s"
+                params.add(game.value)
+            if author_id:
+                query += " AND author_public_id=%s"
+                params.add(author_id)
+            if questionnaire_id:
+                query += " AND id=%s"
+                params.add(questionnaire_id)
+            query += " ORDER BY RAND()"
+
+            result = await super()._read(query, tuple(params))
             result = [QuestionnaireOut(**get_validated_dict_from_tuple(i)) for i in result]
-            logger.info("Done getting questionnaires from db for game '%s'", game.value)
+            logger.info(
+                "Done getting questionnaires from db for (%s, %s, %s)",
+                game, author_id, questionnaire_id
+            )
             return result
         except Exception as e:
-            logger.error("Error while getting questionnaires from db for game '%s'", game.value, exc_info=e)
+            logger.error(
+                "Error while getting questionnaires from db for (%s, %s, %s)",
+                game, author_id, questionnaire_id,
+                exc_info=e
+            )
             raise HTTPException(500)
 
     async def add_questionnaire(self, questionnaire_in: QuestionnaireIn,
