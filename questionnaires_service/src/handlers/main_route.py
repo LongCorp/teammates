@@ -43,7 +43,8 @@ async def authenticate_user(token: str) -> UUID | None:
 @app.middleware('http')
 async def auth_middleware(request: Request, call_next):
     try:
-        if "/docs" in request.url.path or "/openapi.json" in request.url.path:
+        if ("/docs" in request.url.path or "/openapi.json" in request.url.path or
+                "/questionnaires_photos" in request.url.path or "/favicon.ico" in request.url.path):
             return await call_next(request)
 
         token = request.headers["Authorization"].split(" ")[1]

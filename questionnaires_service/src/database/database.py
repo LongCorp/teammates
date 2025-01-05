@@ -164,6 +164,19 @@ class QuestionnairesDataBase(MySqlCommands):
             logger.error("Error while adding questionnaire %s to db", questionnaire_in, exc_info=e)
             raise HTTPException(500)
 
+    async def delete_questionnaire(self, user_id: int, questionnaire_id: UUID):
+        try:
+            logger.info("Start deleting questionnaire (%s) from db", questionnaire_id)
+            await self._delete(
+                "DELETE FROM Questionnaires WHERE id = %s AND author_public_id = %s",
+                (questionnaire_id, user_id)
+            )
+            logger.info("Done deleting questionnaire (%s) from db", questionnaire_id)
+            return True
+        except Exception as e:
+            logger.error("Error while deleting questionnaire %s from db", questionnaire_id, exc_info=e)
+            return False
+
 
 class UsersDataBase(MySqlCommands):
     def __init__(self, database_data: dict):
