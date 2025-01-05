@@ -43,8 +43,10 @@ async def delete_questionnaire(
         questionnaire = await DBEntities.questionnaires_db.get_questionnaires(questionnaire_id=questionnaire_id)
         questionnaire = questionnaire[0]
         if questionnaire.author_id == user_id:
-            await DBEntities.questionnaires_db.delete_questionnaire(user_id, questionnaire_id)
-            return Response(status_code=200, content=f"Deleted {questionnaire_id}")
+            deleted = await DBEntities.questionnaires_db.delete_questionnaire(user_id, questionnaire_id)
+            if deleted:
+                return Response(status_code=200, content=f"Deleted {questionnaire_id}")
+            raise HTTPException(500)
         raise HTTPException(status_code=400, detail="Questionnaire don't belong to user")
     except IndexError:
         raise HTTPException(status_code=404, detail="Wrong questionnaire id")

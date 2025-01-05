@@ -172,8 +172,10 @@ class QuestionnairesDataBase(MySqlCommands):
                 (questionnaire_id, user_id)
             )
             logger.info("Done deleting questionnaire (%s) from db", questionnaire_id)
+            return True
         except Exception as e:
             logger.error("Error while deleting questionnaire %s from db", questionnaire_id, exc_info=e)
+            return False
 
 
 class UsersDataBase(MySqlCommands):
