@@ -78,7 +78,7 @@ async def get_id_by_token(token: str):
         token = AccessToken(token)
         secret_key = token.get_secret_key()
         logger.info("ID by token successfully received")
-    except (DecodeError, ExpiredSignatureError):
+    except (DecodeError, ExpiredSignatureError, TypeError):
         logger.error("Error getting ID by token --- invalid token")
         secret_key = None
     return secret_key
@@ -90,7 +90,7 @@ async def update_tokens(tokens_input: UpdateTokensModel):
     try:
         secret_id = RefreshToken(tokens_input.refresh_token).get_secret_id()
 
-        new_refresh_token = RefreshToken.from_id(secret_id, 86400)
+        new_refresh_token = RefreshToken.from_secret_id(secret_id, 86400)
         new_access_token = AccessToken.from_refresh_token(new_refresh_token, 3600)
         return Response(
             status_code=201,
@@ -99,9 +99,8 @@ async def update_tokens(tokens_input: UpdateTokensModel):
                 "access_token": str(new_access_token),
             })
         )
-
-    except (KeyError, DecodeError, ExpiredSignatureError):
-        logger.info("Bad request for update tokens")
+    except (KeyError, DecodeError, ExpiredSignatureError, TypeError):
+        logger.info("Wrong refresh token received")
         raise HTTPException(401, "Not authenticated")
     except Exception as e:
         logger.error("Error while updating tokens", exc_info=e)
