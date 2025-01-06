@@ -55,6 +55,11 @@ class RefreshToken:
     def __str__(self):
         return self.__token
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__token == other.__token
+        return False
+
 
 class AccessToken:
 

@@ -8,6 +8,7 @@ import aiomysql
 from pydantic import ValidationError
 from pymysql import IntegrityError
 
+from src.entities.tokens import RefreshToken
 from src.models.models import UserModel, RegisterModel
 from src.utils.utils import get_validated_user_dict_from_tuple
 
@@ -159,4 +160,34 @@ class UsersDataBase(MySqlCommands):
             return created_user
         except Exception as e:
             logger.error("Error while creating new user %s", register_data.login, exc_info=e)
+            return None
+
+
+class TokensDataBase(MySqlCommands):
+    def __init__(self, database_data: dict):
+        super().__init__(database_data)
+
+    async def update_refresh_token_for_user(self, user_id: int, refresh_token: RefreshToken) -> bool:
+        try:
+            logger.info("Updating refresh token for user %s", user_id)
+            await self._update(
+                "SET @token = %s;"
+                "INSERT INTO UsersTokens VALUES (%s, @token) ON DUPLICATE KEY UPDATE refresh_token = @token;",
+                (refresh_token, user_id)
+            )
+            logger.info("Done updating refresh token for user %s", user_id)
+            return True
+        except Exception as e:
+            logger.error("Error while updating refresh token for user %s", user_id, exc_info=e)
+            return False
+
+    async def get_refresh_token_for_user(self, user_id: int) -> RefreshToken | None:
+        try:
+            logger.info("Getting refresh token for user %s", user_id)
+            response = await self._read(
+                "SELECT refresh_token FROM UsersTokens WHERE user_id = %s;",
+                (user_id, ))
+            return RefreshToken(response[0][0])
+        except (IndexError, IntegrityError):
+            logger.error("Can't get refresh token for user %s", user_id)
             return None
