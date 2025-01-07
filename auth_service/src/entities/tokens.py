@@ -9,7 +9,11 @@ from src.models.models import UserModel
 
 class RefreshToken:
     def __init__(self, token: str):
-        self.__token = token
+        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        if payload["type"] == "refresh":
+            self.__token = token
+        else:
+            raise TypeError("Token type must be 'refresh'")
 
     def get_secret_id(self):
         payload = jwt.decode(self.__token, JWT_SECRET, algorithms=['HS256'])
@@ -26,13 +30,14 @@ class RefreshToken:
             jti=str(uuid.uuid4()),
             iat=current_timestamp,
             nbf=current_timestamp,
-            exp=current_timestamp + ttl
+            exp=current_timestamp + ttl,
+            type="refresh"
         )
 
         return RefreshToken(jwt.encode(payload=data, key=JWT_SECRET, algorithm='HS256'))
 
     @staticmethod
-    def from_id(secret_id: str, ttl: int):
+    def from_secret_id(secret_id: str, ttl: int):
         current_timestamp = datetime.timestamp((datetime.now(tz=timezone.utc)))
 
         data = dict(
@@ -41,7 +46,8 @@ class RefreshToken:
             jti=str(uuid.uuid4()),
             iat=current_timestamp,
             nbf=current_timestamp,
-            exp=current_timestamp + ttl
+            exp=current_timestamp + ttl,
+            type='refresh'
         )
 
         return RefreshToken(jwt.encode(payload=data, key=JWT_SECRET, algorithm='HS256'))
@@ -49,11 +55,20 @@ class RefreshToken:
     def __str__(self):
         return self.__token
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__token == other.__token
+        return False
+
 
 class AccessToken:
 
     def __init__(self, token: str):
-        self.__token = token
+        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        if payload["type"] == "access":
+            self.__token = token
+        else:
+            raise TypeError("Token type must be 'access'")
 
     def get_secret_key(self):
         payload = jwt.decode(self.__token, JWT_SECRET, algorithms=['HS256'])
@@ -71,7 +86,8 @@ class AccessToken:
             jti=str(uuid.uuid4()),
             iat=current_timestamp,
             nbf=current_timestamp,
-            exp=current_timestamp + ttl
+            exp=current_timestamp + ttl,
+            type="access"
         )
 
         return AccessToken(jwt.encode(payload=data, key=JWT_SECRET, algorithm='HS256'))
