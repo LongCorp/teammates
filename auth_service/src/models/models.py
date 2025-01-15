@@ -37,8 +37,8 @@ class UserModel(BaseModel):
     public_id: int
     secret_id: str = Field(exclude=True)
     email: EmailStr
-    description: Optional[str]
-    image_path: Optional[str]
+    description: Optional[str] = None
+    image_path: Optional[str] = None
 
 
 class UpdateTokensModel(BaseModel):
