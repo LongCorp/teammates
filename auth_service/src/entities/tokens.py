@@ -70,7 +70,7 @@ class AccessToken:
         else:
             raise TypeError("Token type must be 'access'")
 
-    def get_secret_key(self):
+    def get_secret_id(self):
         payload = jwt.decode(self.__token, JWT_SECRET, algorithms=['HS256'])
         return payload["sub"]
 

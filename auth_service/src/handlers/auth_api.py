@@ -83,7 +83,7 @@ async def get_id_by_token(token: str):
     try:
         logger.info("Received request to get ID by token: %s", token)
         token = AccessToken(token)
-        secret_key = token.get_secret_key()
+        secret_key = token.get_secret_id()
         logger.info("ID by token successfully received")
     except (DecodeError, ExpiredSignatureError, TypeError):
         logger.error("Error getting ID by token --- invalid token")
