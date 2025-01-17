@@ -118,7 +118,11 @@ class UsersDataBase(MySqlCommands):
         try:
             logger.info("Getting password hash for user %s", nickname)
             response = await self._read(
-                "SELECT password FROM Users JOIN UsersPasswords on Users.public_id WHERE Users.nickname = %s ",
+                """SELECT UsersPasswords.password
+                FROM Users
+                JOIN UsersPasswords ON Users.public_id = UsersPasswords.public_id
+                WHERE Users.nickname = %s;
+                 """,
                 (nickname,)
             )
             logger.info("Done getting password hash for user %s", nickname)
