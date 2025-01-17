@@ -1,5 +1,6 @@
 from decouple import config
 
+
 db_data = {
     "host": config("DB_HOST"),
     "port": 3306,
@@ -8,3 +9,5 @@ db_data = {
     "db": config("DB_NAME"),
     "autocommit": True
 }
+
+auth_service_url = config("AUTH_SERVICE_URL")

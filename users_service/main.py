@@ -4,8 +4,9 @@ import logging
 import uvicorn
 
 from src.entities.entities import LoggerHandlers
-from src.handlers.users_api import app
-
+from src.handlers.main_route import app
+from src.handlers.likes_route import likes_router
+from src.handlers.users_route import users_router
 
 def configure_logging():
     logging.basicConfig(
@@ -16,6 +17,8 @@ def configure_logging():
     )
 
 async def main():
+    app.include_router(likes_router)
+    app.include_router(users_router)
     configure_logging()
     config = uvicorn.Config(app=app, host="0.0.0.0", port=8200, loop="asyncio", reload=True)
     server = uvicorn.Server(config)
