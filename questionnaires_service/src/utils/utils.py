@@ -11,6 +11,8 @@ async def save_questionnaire_image(image: UploadFile | None, questionnaire_id: U
     if image:
         try:
             path = os.path.abspath(f"./questionnaires_photos/{questionnaire_id}.jpg")
+            if not os.path.exists("./questionnaires_photos"):
+                os.mkdir("./questionnaires_photos/")
             async with aiofiles.open(path, "wb") as out_file:
                 content = await image.read()
                 await out_file.write(content)
