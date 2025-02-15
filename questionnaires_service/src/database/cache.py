@@ -5,7 +5,7 @@ import redis.asyncio as redis
 from pydantic import TypeAdapter
 from redis import Redis
 
-from src.models.models import QuestionnaireOut, Game
+from src.models.models import QuestionnaireOut, GameEnum
 
 logger = logging.getLogger(__name__)
 

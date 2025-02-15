@@ -5,12 +5,12 @@ networks:
 
 services:
   questionnaires_service:
-    build: ./questionnaires_service
+    build:
+      context: .
+      dockerfile: ./questionnaires_service/Dockerfile
     container_name: questionnaires_service
     ports:
       - '8000:8000'
-    volumes:
-      - ./questionnaires_service:/questionnaires_service
     networks:
       - isolation-network
 
@@ -19,8 +19,6 @@ services:
     container_name: auth_service
     ports:
       - '8100:8100'
-    volumes:
-      - ./auth_service:/auth_service
     networks:
       - isolation-network
 
@@ -33,8 +31,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "root"
       MYSQL_DATABASE: "teammates"
-    volumes:
-      - ./teammates_db:/docker-entrypoint-initdb.d
     networks:
       - isolation-network
 
@@ -51,7 +47,5 @@ services:
     container_name: users_service
     ports:
       - '8200:8200'
-    volumes:
-      - ./users_service:/users_service
     networks:
       - isolation-network

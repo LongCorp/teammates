@@ -1,27 +1,17 @@
 from __future__ import annotations
 
 import json
-from enum import Enum
-from typing import Optional, Iterable
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
-from fastapi import UploadFile, Form
-
-
-class Game(Enum):
-    CS2 = 'CS2'
-    Dota_2 = 'Dota 2'
-    GTA_5 = 'GTA 5'
-    Volorant = 'Volorant'
+from teammates_db.enums import GameEnum
 
 
 class QuestionnaireIn(BaseModel):
     header: str = Field(example='Wanna find teammate Dota 2')
-    game: Game
+    game: GameEnum
     description: str
     author_id: int
-
 
     @model_validator(mode='before')
     @classmethod
@@ -33,4 +23,4 @@ class QuestionnaireIn(BaseModel):
 
 class QuestionnaireOut(QuestionnaireIn):
     questionnaire_id: UUID
-    photo_path: str
+    image_path: str

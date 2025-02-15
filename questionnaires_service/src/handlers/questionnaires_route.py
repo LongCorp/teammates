@@ -6,8 +6,9 @@ from uuid import UUID
 from fastapi import APIRouter
 from pydantic import TypeAdapter
 
-from src.models.models import QuestionnaireOut, Game
+from src.models.models import QuestionnaireOut, GameEnum
 from src.entities.entities import DBEntities
+from src.database import questionnaires_methods
 
 questionnaires_router = APIRouter()
 
@@ -20,7 +21,7 @@ async def get_questionnaires(
         user_id: int,
         page: Optional[int] = 1,
         limit: Optional[int] = 10,
-        game: Optional[Game] = None,
+        game: Optional[GameEnum] = None,
         author_id: Optional[int] = None,
         questionnaire_id: Optional[UUID] = None,
 ) -> List[QuestionnaireOut] | str:
@@ -31,7 +32,9 @@ async def get_questionnaires(
     try:
         if questionnaires[0] is None:
             type_adapter = TypeAdapter(list[QuestionnaireOut])
-            questionnaires = await DBEntities.questionnaires_db.get_questionnaires(game, author_id, questionnaire_id)
+            questionnaires = await questionnaires_methods.get_questionnaires(
+                geme=game, author_id=author_id, questionnaire_id=questionnaire_id
+            )
             encoded = type_adapter.dump_json(questionnaires).decode("utf-8")
 
             await DBEntities.questionnaires_cache.set_questionnaires(
@@ -39,5 +42,6 @@ async def get_questionnaires(
             )
     except IndexError:
         return []
+
     start_index = (page - 1) * limit
     return questionnaires[start_index:start_index + limit]

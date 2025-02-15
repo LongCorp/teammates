@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import UploadFile, Body, Request, APIRouter, HTTPException, Response
 
 from src.models.models import QuestionnaireOut, QuestionnaireIn
-from src.entities.entities import DBEntities
+from src.database import questionnaires_methods
 from src.utils.utils import save_questionnaire_image
 
 questionnaire_router = APIRouter()
@@ -25,8 +25,8 @@ async def post_questionnaire(
     if user_id == questionnaire_in.author_id:
         questionnaire_id = uuid.uuid4()
         image_path = await save_questionnaire_image(image, questionnaire_id, str(request.url))
-        response_questionnaire = await DBEntities.questionnaires_db.add_questionnaire(
-            questionnaire_in, image_path, questionnaire_id
+        response_questionnaire = await questionnaires_methods.add_questionnaire(
+            questionnaire_in, image_path
         )
         return response_questionnaire
     raise HTTPException(400, "author_id and user_id must be the same")
@@ -40,10 +40,10 @@ async def delete_questionnaire(
         questionnaire_id: uuid.UUID
 ) -> Response:
     try:
-        questionnaire = await DBEntities.questionnaires_db.get_questionnaires(questionnaire_id=questionnaire_id)
+        questionnaire = await questionnaires_methods.get_questionnaires(questionnaire_id=questionnaire_id)
         questionnaire = questionnaire[0]
         if questionnaire.author_id == user_id:
-            deleted = await DBEntities.questionnaires_db.delete_questionnaire(user_id, questionnaire_id)
+            deleted = await questionnaires_methods.delete_questionnaire(questionnaire_id)
             if deleted:
                 return Response(status_code=200, content=f"Deleted {questionnaire_id}")
             raise HTTPException(500)
