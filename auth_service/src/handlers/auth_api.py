@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import json
 import logging
+from uuid import UUID
+
 from fastapi import HTTPException
 
 from fastapi import FastAPI, Response
 from jwt import DecodeError, ExpiredSignatureError
 
+from src.database import users_methods, tokens_methods
 from src.entities.tokens import AccessToken, RefreshToken
 from src.models.models import LoginModel, RegisterModel, UpdateTokensModel
-from src.entities.entities import DBEntities
 
 logger = logging.getLogger(__name__)
 app = FastAPI(
@@ -22,22 +24,22 @@ app = FastAPI(
 @app.post("/login")
 async def login(login_info: LoginModel):
 
-    logger.info("Received login request with login: %s", login_info.login)
+    logger.info("Received login request with login: %s", login_info.nickname)
 
-    password_from_db = await DBEntities.users_db.get_password_hash_by_nickname(
-        login_info.login
+    password_from_db = await users_methods.get_password_hash_by_nickname(
+        login_info.nickname
     )
 
     if password_from_db == login_info.password:
-        user = await DBEntities.users_db.get_user_by_nickname(login_info.login)
+        user = await users_methods.get_user_by_nickname(login_info.nickname)
 
         refresh_token = RefreshToken.from_user(user, 86400)
         access_token = AccessToken.from_refresh_token(refresh_token, 3600)
 
-        added = await DBEntities.tokens_db.update_refresh_token_for_user(user.public_id, refresh_token)
+        added = await tokens_methods.update_refresh_token_for_user(UUID(user.public_id), refresh_token)
 
         if added:
-            logger.info("User with login %s successfully authenticated", login_info.login)
+            logger.info("User with login %s successfully authenticated", login_info.nickname)
 
             return Response(
                 status_code=201,
@@ -47,24 +49,24 @@ async def login(login_info: LoginModel):
                     "refresh_token": str(refresh_token),
                 })
             )
-    logger.error("Authentication failed for user with login: %s", login_info.login)
+    logger.error("Authentication failed for user with login: %s", login_info.nickname)
     raise HTTPException(401, "Not authenticated")
 
 
 @app.post("/register")
 async def register(register_data: RegisterModel):
-    logger.info("Received register request with register: %s %s", register_data.login, register_data.email)
+    logger.info("Received register request with register: %s %s", register_data.nickname, register_data.email)
 
-    registered_user = await DBEntities.users_db.create_user(register_data)
+    registered_user = await users_methods.create_user(register_data)
 
     if registered_user:
         refresh_token = RefreshToken.from_user(registered_user, 86400)
         access_token = AccessToken.from_refresh_token(refresh_token, 3600)
 
-        added = await DBEntities.tokens_db.update_refresh_token_for_user(registered_user.public_id, refresh_token)
+        added = await tokens_methods.update_refresh_token_for_user(UUID(registered_user.public_id), refresh_token)
 
         if added:
-            logger.info("User %s successfully registered", register_data.login)
+            logger.info("User %s successfully registered", register_data.nickname)
             return Response(
                 status_code=201,
                 content=json.dumps({
@@ -74,7 +76,7 @@ async def register(register_data: RegisterModel):
                 })
             )
 
-    logger.error("Registration failed for user with register: %s %s", register_data.login, register_data.email)
+    logger.error("Registration failed for user with register: %s %s", register_data.nickname, register_data.email)
     raise HTTPException(500, "Server error")
 
 
@@ -83,7 +85,7 @@ async def get_id_by_token(token: str):
     try:
         logger.info("Received request to get ID by token: %s", token)
         token = AccessToken(token)
-        secret_key = token.get_secret_id()
+        secret_key = token.get_auth_id()
         logger.info("ID by token successfully received")
     except (DecodeError, ExpiredSignatureError, TypeError):
         logger.error("Error getting ID by token --- invalid token")
@@ -95,18 +97,16 @@ async def get_id_by_token(token: str):
 async def update_tokens(tokens_input: UpdateTokensModel):
     logger.info("Received request to update tokens")
     try:
-        secret_id = RefreshToken(tokens_input.refresh_token).get_secret_id()
-        public_id = await DBEntities.users_db.get_public_id(secret_id)
-        current_refresh_token = await DBEntities.tokens_db.get_refresh_token_for_user(public_id)
-
-        if current_refresh_token == RefreshToken(tokens_input.refresh_token):
-
-            new_refresh_token = RefreshToken.from_secret_id(secret_id, 86400)
+        current_refresh_token = await tokens_methods.get_refresh_token_for_user_by_id(UUID(tokens_input.public_id))
+        refresh_token = RefreshToken(tokens_input.refresh_token)
+        if current_refresh_token == refresh_token:
+            auth_id = refresh_token.get_auth_id()
+            new_refresh_token = RefreshToken.from_auth_id(auth_id, 86400)
             new_access_token = AccessToken.from_refresh_token(new_refresh_token, 3600)
 
-            added = await DBEntities.tokens_db.update_refresh_token_for_user(public_id, new_refresh_token)
+            added = await tokens_methods.update_refresh_token_for_user(UUID(tokens_input.public_id), new_refresh_token)
             if added:
-                logger.info("Updated tokens for user %s", public_id)
+                logger.info("Updated tokens for user %s", tokens_input.public_id)
                 return Response(
                     status_code=201,
                     content=json.dumps({

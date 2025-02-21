@@ -15,7 +15,7 @@ class RefreshToken:
         else:
             raise TypeError("Token type must be 'refresh'")
 
-    def get_secret_id(self):
+    def get_auth_id(self):
         payload = jwt.decode(self.__token, JWT_SECRET, algorithms=['HS256'])
         return payload["sub"]
 
@@ -26,7 +26,7 @@ class RefreshToken:
 
         data = dict(
             iss='LongCorp@auth_service',
-            sub=user.secret_id,
+            sub=user.auth_id,
             jti=str(uuid.uuid4()),
             iat=current_timestamp,
             nbf=current_timestamp,
@@ -37,12 +37,12 @@ class RefreshToken:
         return RefreshToken(jwt.encode(payload=data, key=JWT_SECRET, algorithm='HS256'))
 
     @staticmethod
-    def from_secret_id(secret_id: str, ttl: int):
+    def from_auth_id(auth_id: str, ttl: int):
         current_timestamp = datetime.timestamp((datetime.now(tz=timezone.utc)))
 
         data = dict(
             iss='LongCorp@auth_service',
-            sub=secret_id,
+            sub=auth_id,
             jti=str(uuid.uuid4()),
             iat=current_timestamp,
             nbf=current_timestamp,
@@ -70,7 +70,7 @@ class AccessToken:
         else:
             raise TypeError("Token type must be 'access'")
 
-    def get_secret_id(self):
+    def get_auth_id(self):
         payload = jwt.decode(self.__token, JWT_SECRET, algorithms=['HS256'])
         return payload["sub"]
 
@@ -78,11 +78,11 @@ class AccessToken:
     def from_refresh_token(refresh_token: RefreshToken, ttl: int):
         current_timestamp = datetime.timestamp((datetime.now(tz=timezone.utc)))
 
-        secret_id = refresh_token.get_secret_id()
+        auth_id = refresh_token.get_auth_id()
 
         data = dict(
             iss='LongCorp@auth_service',
-            sub=secret_id,
+            sub=auth_id,
             jti=str(uuid.uuid4()),
             iat=current_timestamp,
             nbf=current_timestamp,

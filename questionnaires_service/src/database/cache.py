@@ -1,11 +1,12 @@
 import logging
 from typing import List, Optional
+from uuid import UUID
 
 import redis.asyncio as redis
 from pydantic import TypeAdapter
 from redis import Redis
 
-from src.models.models import QuestionnaireOut, Game
+from src.models.models import QuestionnaireOut, GameEnum
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class QuestionnairesCache:
 
     async def set_questionnaires(
             self,
-            user_id: int,
+            user_id: UUID,
             *args,
             value: str
     ):
@@ -54,13 +55,13 @@ class QuestionnairesCache:
             async with self.__con.pipeline() as connection:
                 key = ':'.join([str(user_id), *[str(i) for i in args if i is not None]])
                 await connection.set(key, value).execute()
-                await connection.expire(user_id, EXPIRATION_TIME).execute()
+                await connection.expire(str(user_id), EXPIRATION_TIME).execute()
             logger.info("Done adding questionnaires to cache for user %d %s", user_id, args)
             return True
         except Exception as e:
             logger.error("Error while adding questionnaires to cache for user %d", user_id, exc_info=e)
 
-    async def get_questionnaires(self, user_id: int, *args) -> List[QuestionnaireOut] | List[None]:
+    async def get_questionnaires(self, user_id: UUID, *args) -> List[QuestionnaireOut] | List[None]:
         if not self.__con:
             await self.__create_connection()
 
