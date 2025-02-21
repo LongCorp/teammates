@@ -18,11 +18,11 @@ questionnaires_router = APIRouter()
     response_model=List[QuestionnaireOut]
 )
 async def get_questionnaires(
-        user_id: int,
+        user_id: UUID,
         page: Optional[int] = 1,
         limit: Optional[int] = 10,
         game: Optional[GameEnum] = None,
-        author_id: Optional[int] = None,
+        author_id: Optional[UUID] = None,
         questionnaire_id: Optional[UUID] = None,
 ) -> List[QuestionnaireOut] | str:
     questionnaires = await DBEntities.questionnaires_cache.get_questionnaires(
@@ -33,7 +33,7 @@ async def get_questionnaires(
         if questionnaires[0] is None:
             type_adapter = TypeAdapter(list[QuestionnaireOut])
             questionnaires = await questionnaires_methods.get_questionnaires(
-                geme=game, author_id=author_id, questionnaire_id=questionnaire_id
+                game=game, author_id=author_id, questionnaire_id=questionnaire_id
             )
             encoded = type_adapter.dump_json(questionnaires).decode("utf-8")
 

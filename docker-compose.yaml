@@ -15,7 +15,9 @@ services:
       - isolation-network
 
   auth_service:
-    build: ./auth_service
+    build:
+      context: .
+      dockerfile: ./auth_service/Dockerfile
     container_name: auth_service
     ports:
       - '8100:8100'

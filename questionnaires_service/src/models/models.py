@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 from teammates_db.enums import GameEnum
 
 
@@ -11,7 +11,7 @@ class QuestionnaireIn(BaseModel):
     header: str = Field(example='Wanna find teammate Dota 2')
     game: GameEnum
     description: str
-    author_id: int
+    author_id: UUID
 
     @model_validator(mode='before')
     @classmethod
@@ -22,5 +22,7 @@ class QuestionnaireIn(BaseModel):
 
 
 class QuestionnaireOut(QuestionnaireIn):
-    questionnaire_id: UUID
+    id: UUID
     image_path: str
+
+    model_config = ConfigDict(from_attributes=True)

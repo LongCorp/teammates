@@ -55,5 +55,5 @@ async def auth_middleware(request: Request, call_next):
         if user_public_id == current_user_id:
             return await call_next(request)
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-    except KeyError:
+    except (KeyError, ValueError):
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)

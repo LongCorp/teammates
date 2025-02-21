@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
-from src.database.dao.models import Base, User, Questionnaire
+from src.database.dao.models import Base, User, Questionnaire, UserRefreshToken
 
 T = TypeVar("T", bound=Base)
 
@@ -28,7 +28,7 @@ class BaseDAO(Generic[T]):
     @classmethod
     async def find_all(cls, session: AsyncSession, filters: BaseModel | None):
         if filters:
-            filter_dict = filters.model_dump(exclude_none=True, exclude_unset=True)
+            filter_dict = filters.model_dump(exclude_unset=True)
         else:
             filter_dict = {}
         try:
@@ -69,16 +69,30 @@ class UserDAO(BaseDAO[User]):
     model = User
 
     @classmethod
-    async def get_public_id_by_auth_id(cls, auth_id: UUID, session: AsyncSession):
+    async def get_password_hash_by_nickname(cls, nickname: str, session: AsyncSession) -> str:
         try:
-            stmp = sa.select(cls.model.id).where(cls.model.auth_id == auth_id)
-
+            stmp = sa.select(cls.model.password).filter(cls.model.nickname == nickname)
             result = await session.execute(stmp)
-            record = result.scalar_one_or_none()
-            return record
+            result = result.scalar_one_or_none()
+            return result
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def get_user_by_nickname(cls, nickname: str, session: AsyncSession) -> User:
+
+        try:
+            stmp = sa.select(cls.model).where(cls.model.nickname == nickname)
+            result = await session.execute(stmp)
+            result = result.scalar_one_or_none()
+            return result
         except SQLAlchemyError as e:
             raise e
 
 
 class QuestionnaireDAO(BaseDAO[Questionnaire]):
     model = Questionnaire
+
+
+class UserRefreshTokenDAO(BaseDAO[UserRefreshToken]):
+    model = UserRefreshToken

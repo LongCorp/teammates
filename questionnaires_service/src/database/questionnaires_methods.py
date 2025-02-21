@@ -13,7 +13,7 @@ from src.models.models import GameEnum, QuestionnaireOut, QuestionnaireIn
 logger = logging.getLogger(__name__)
 
 
-@connection
+@connection()
 async def get_questionnaires(
         session: AsyncSession,
         game: Optional[GameEnum] = None,
@@ -52,38 +52,33 @@ async def get_questionnaires(
             exc_info=e
         )
         raise HTTPException(500)
+
     return result
 
 
-@connection
+@connection()
 async def add_questionnaire(
         questionnaire_in: QuestionnaireIn,
         image_path: str,
+        questionnaire_id: UUID,
         session: AsyncSession
 ) -> QuestionnaireOut:
-    questionnaire_in.image_path = image_path
-
+    data = questionnaire_in.model_dump()
+    data["image_path"] = image_path
+    data["id"] = questionnaire_id
     logger.info("Adding questionnaire (%s) to db", questionnaire_in)
-
     try:
-        result = await QuestionnaireDAO.add(session=session, values=questionnaire_in)
+        result = await QuestionnaireDAO.add(session=session, values=QuestionnaireOut(**data))
     except Exception as e:
         logger.error("Error while adding questionnaire %s to db", questionnaire_in, exc_info=e)
         raise HTTPException(500)
 
     logger.info("Done adding questionnaire (%s) to db", questionnaire_in)
 
-    return QuestionnaireOut(
-        questionnaire_id=result.id,
-        image_path=result.image_path,
-        header=result.header,
-        game=result.game,
-        description=result.description,
-        author_id=result.author_id,
-    )
+    return QuestionnaireOut.model_validate(result)
 
 
-@connection
+@connection()
 async def delete_questionnaire(questionnaire_id: UUID, session: AsyncSession):
     logger.info("Start deleting questionnaire (%s) from db", questionnaire_id)
     try:
