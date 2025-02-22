@@ -77,7 +77,19 @@ class UserDAO(BaseDAO[User]):
 
             result = await session.execute(stmp)
             record = result.scalar_one_or_none()
+            print(record)
             return record
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def get_user_by_nickname(cls, nickname: str, session: AsyncSession) -> User:
+
+        try:
+            stmp = sa.select(cls.model).where(cls.model.nickname == nickname)
+            result = await session.execute(stmp)
+            result = result.scalar_one_or_none()
+            return result
         except SQLAlchemyError as e:
             raise e
 
@@ -85,10 +97,42 @@ class UserDAO(BaseDAO[User]):
 class QuestionnaireDAO(BaseDAO[Questionnaire]):
     model = Questionnaire
 
+
 class LikedQuestionnaireDAO(BaseDAO[LikedQuestionnaire]):
     model = LikedQuestionnaire
 
+    @classmethod
+    async def delete_like(cls, liker_id: UUID, questionnaire_id: UUID, session: AsyncSession):
+        try:
+            query = sa.select(cls.model).where(
+                cls.model.questionnaire_id == questionnaire_id,
+                cls.model.liker_id == liker_id
+            )
+            like = await session.execute(query)
+            if like:
+                await session.delete(like)
+                await session.flush()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
+
+
 class LikedUserDAO(BaseDAO[LikedUser]):
     model = LikedUser
+
+    @classmethod
+    async def delete_like(cls, liker_id: UUID, liked_id: UUID, session: AsyncSession):
+        try:
+            query = sa.select(cls.model).where(
+                cls.model.liked_id == liked_id,
+                cls.model.liked_by_id == liker_id
+            )
+            like = await session.execute(query)
+            if like:
+                await session.delete(like)
+                await session.flush()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
 
 
