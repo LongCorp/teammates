@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
 from src.database.dao.models import Base, User, Questionnaire
-from teammates_db.models import LikedQuestionnaire, LikedUser
+from src.database.dao.models import LikedQuestionnaire, LikedUser
 
 T = TypeVar("T", bound=Base)
 
@@ -77,7 +77,6 @@ class UserDAO(BaseDAO[User]):
 
             result = await session.execute(stmp)
             record = result.scalar_one_or_none()
-            print(record)
             return record
         except SQLAlchemyError as e:
             raise e
@@ -86,8 +85,8 @@ class UserDAO(BaseDAO[User]):
     async def get_user_by_nickname(cls, nickname: str, session: AsyncSession) -> User:
 
         try:
-            stmp = sa.select(cls.model).where(cls.model.nickname == nickname)
-            result = await session.execute(stmp)
+            query = sa.select(cls.model).where(cls.model.nickname == nickname)
+            result = await session.execute(query)
             result = result.scalar_one_or_none()
             return result
         except SQLAlchemyError as e:
@@ -108,14 +107,40 @@ class LikedQuestionnaireDAO(BaseDAO[LikedQuestionnaire]):
                 cls.model.questionnaire_id == questionnaire_id,
                 cls.model.liker_id == liker_id
             )
-            like = await session.execute(query)
+            result = await session.execute(query)
+            like = result.scalar_one_or_none()
             if like:
                 await session.delete(like)
                 await session.flush()
+                return True
+            return False
         except SQLAlchemyError as e:
             await session.rollback()
             raise e
 
+    @classmethod
+    async def get_liked_questionnaires(cls, liker_id: UUID, session: AsyncSession):
+        try:
+            query = sa.select(Questionnaire).join(cls.model).where(cls.model.liker_id == liker_id,
+                                                                   cls.model.questionnaire_id == Questionnaire.id
+            )
+            result = await session.execute(query)
+            records = result.scalars().all()
+            return records
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def check_like(cls, liker_id: UUID, questionnaire_id: UUID, session: AsyncSession):
+        try:
+            query = sa.select(LikedQuestionnaire).where(cls.model.liker_id == liker_id,
+                                                        cls.model.questionnaire_id == questionnaire_id
+            )
+            result = await session.execute(query)
+            result = result.scalar_one_or_none()
+            return result
+        except SQLAlchemyError as e:
+            raise e
 
 class LikedUserDAO(BaseDAO[LikedUser]):
     model = LikedUser
@@ -127,12 +152,38 @@ class LikedUserDAO(BaseDAO[LikedUser]):
                 cls.model.liked_id == liked_id,
                 cls.model.liked_by_id == liker_id
             )
-            like = await session.execute(query)
+            result = await session.execute(query)
+            like = result.scalar_one_or_none()
             if like:
                 await session.delete(like)
                 await session.flush()
+                return True
+            return False
         except SQLAlchemyError as e:
             await session.rollback()
             raise e
 
+    @classmethod
+    async def get_liked_users(cls, liker_id: UUID, session: AsyncSession):
+        try:
+            query = sa.select(User).join(cls.model, User.id == LikedUser.liked_id).where(cls.model.liked_by_id == liker_id,
+                                                                   cls.model.liked_id == User.id
+            )
+            result = await session.execute(query)
+            records = result.scalars().all()
+            return records
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def check_like(cls, liker_id: UUID, liked_id: UUID, session: AsyncSession):
+        try:
+            query = sa.select(LikedUser).where(cls.model.liked_by_id == liker_id,
+                                                        cls.model.liked_id == liked_id
+            )
+            result = await session.execute(query)
+            result = result.scalar_one_or_none()
+            return result
+        except SQLAlchemyError as e:
+            raise e
 
