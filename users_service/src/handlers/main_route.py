@@ -8,7 +8,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from src.config import auth_service_url
-from src.entities.entities import DBEntities
+from src.database import users_methods
 
 logger = logging.getLogger(__name__)
 app = FastAPI(
@@ -41,10 +41,10 @@ async def auth_middleware(request: Request, call_next):
 
         token = request.headers["Authorization"].split(" ")[1]
         secret_id = await authenticate_user(token)
-        current_user_id = await DBEntities.users_db.get_public_id(secret_id)
+        current_user_id = await users_methods.get_public_id(secret_id)
 
-        user_public_id = int(request.query_params["user_id"])
-        if user_public_id == current_user_id:
+        user_public_id = request.query_params["user_id"]
+        if user_public_id == str(current_user_id):
             return await call_next(request)
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     except KeyError:

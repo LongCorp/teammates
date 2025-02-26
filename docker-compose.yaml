@@ -45,7 +45,9 @@ services:
       - isolation-network
 
   users_service:
-    build: ./users_service
+    build:
+      dockerfile: ./users_service/Dockerfile
+      context: .
     container_name: users_service
     ports:
       - '8200:8200'

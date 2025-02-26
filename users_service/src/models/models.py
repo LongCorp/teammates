@@ -7,20 +7,20 @@ from pydantic import BaseModel, Field, EmailStr
 
 class UserModel(BaseModel):
     nickname: str
-    public_id: int
-    secret_id: str = Field(exclude=True)
+    id: UUID
+    auth_id: UUID = Field(exclude=True)
     email: Annotated[EmailStr, Field(exclude=True)]
     description: Optional[str]
     image_path: Optional[str]
 
 
 class UserLikeModel(BaseModel):
-    liker_id: int
-    liked_id: int
+    liked_by_id: UUID
+    liked_id: UUID
 
 
 class QuestionnaireLikeModel(BaseModel):
-    liker_id: int
+    liker_id: UUID
     questionnaire_id: UUID
 
 class Game(Enum):
@@ -30,11 +30,11 @@ class Game(Enum):
     Volorant = 'Volorant'
 
 class QuestionnaireIn(BaseModel):
-    header: str = Field(example='Wanna find teammate Dota 2')
+    header: str = Field(example="Wanna find teammate Dota 2")
     game: Game
     description: str
-    author_id: int
+    author_id: UUID
 
 class QuestionnaireOut(QuestionnaireIn):
-    questionnaire_id: UUID
-    photo_path: str
+    id: UUID
+    image_path: str
