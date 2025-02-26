@@ -1,5 +1,4 @@
 import logging
-from sys import exc_info
 from uuid import UUID
 
 from fastapi import HTTPException

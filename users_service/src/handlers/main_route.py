@@ -9,7 +9,6 @@ from starlette.responses import Response
 
 from src.config import auth_service_url
 from src.database import users_methods
-from src.entities.entities import DBEntities
 
 logger = logging.getLogger(__name__)
 app = FastAPI(

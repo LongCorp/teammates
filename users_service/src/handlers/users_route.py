@@ -3,12 +3,10 @@ import logging
 from typing import Optional
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, APIRouter
-from starlette.responses import Response
+from fastapi import HTTPException, APIRouter
 
 from src.database import users_methods
-from src.entities.entities import DBEntities
-from src.models.models import UserModel, UserLikeModel
+from src.models.models import UserModel
 
 logger = logging.getLogger(__name__)
 
