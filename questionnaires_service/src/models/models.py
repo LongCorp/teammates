@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, model_validator, ConfigDict
 from teammates_db.enums import GameEnum
 
 
-class QuestionnaireIn(BaseModel):
+class QuestionnaireInModel(BaseModel):
     header: str = Field(example='Wanna find teammate Dota 2')
     game: GameEnum
     description: str
@@ -21,7 +21,7 @@ class QuestionnaireIn(BaseModel):
         return value
 
 
-class QuestionnaireOut(QuestionnaireIn):
+class QuestionnaireModel(QuestionnaireInModel):
     id: UUID
     image_path: str
 

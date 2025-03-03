@@ -1,6 +1,6 @@
 import json
 
-from src.models.models import QuestionnaireIn
+from src.models.models import QuestionnaireInModel
 
 
 def test_questionnaire_in_from_json():
@@ -12,4 +12,4 @@ def test_questionnaire_in_from_json():
     }
 
     json_data = json.dumps(data)
-    assert QuestionnaireIn.model_validate_json(json_data) == QuestionnaireIn(**data)
+    assert QuestionnaireInModel.model_validate_json(json_data) == QuestionnaireInModel(**data)

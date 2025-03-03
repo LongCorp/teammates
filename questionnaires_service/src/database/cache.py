@@ -6,7 +6,7 @@ import redis.asyncio as redis
 from pydantic import TypeAdapter
 from redis import Redis
 
-from src.models.models import QuestionnaireOut, GameEnum
+from src.models.models import QuestionnaireModel, GameEnum
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class QuestionnairesCache:
         except Exception as e:
             logger.error("Error while adding questionnaires to cache for user %d", user_id, exc_info=e)
 
-    async def get_questionnaires(self, user_id: UUID, *args) -> List[QuestionnaireOut] | List[None]:
+    async def get_questionnaires(self, user_id: UUID, *args) -> List[QuestionnaireModel] | List[None]:
         if not self.__con:
             await self.__create_connection()
 
@@ -72,7 +72,7 @@ class QuestionnairesCache:
                 result = await connection.get(key).execute()
 
             if result[0] is not None:
-                type_adapter = TypeAdapter(list[QuestionnaireOut])
+                type_adapter = TypeAdapter(list[QuestionnaireModel])
                 result = type_adapter.validate_json(result[0])
             logger.info("Done getting questionnaires from cache for user %d and %s, total questionnaires: %d",
                         user_id, args, len(result))

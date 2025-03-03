@@ -1,40 +1,61 @@
 from __future__ import annotations
 
-import uuid
 from uuid import UUID
 from typing import Optional
 
 from fastapi import UploadFile, Body, Request, APIRouter, HTTPException, Response
 
-from src.models.models import QuestionnaireOut, QuestionnaireIn
+from src.models.models import QuestionnaireModel, QuestionnaireInModel
 from src.database import questionnaires_methods
-from src.utils.utils import save_questionnaire_image
 
-questionnaire_router = APIRouter()
+questionnaire_router = APIRouter(prefix="/questionnaire")
 
 
 @questionnaire_router.post(
-    '/questionnaire',
-    response_model=Optional[QuestionnaireOut],
+    '/',
+    response_model=Optional[QuestionnaireModel],
 )
 async def post_questionnaire(
         user_id: UUID,
         request: Request,
-        questionnaire_in: QuestionnaireIn = Body(...),
+        questionnaire_in: QuestionnaireInModel = Body(...),
         image: Optional[UploadFile] = None,
 ) -> Response:
     if user_id == questionnaire_in.author_id:
-        questionnaire_id = uuid.uuid4()
-        image_path = await save_questionnaire_image(image, questionnaire_id, str(request.url))
         response_questionnaire = await questionnaires_methods.add_questionnaire(
-            questionnaire_in, image_path, questionnaire_id
+            questionnaire_in=questionnaire_in,
+            image=image,
+            request_url=str(request.url)
         )
         return Response(status_code=201, content=response_questionnaire.model_dump_json())
     raise HTTPException(400, "author_id and user_id must be the same")
 
 
+@questionnaire_router.put(
+    "/{questionnaire_id}",
+    response_model=QuestionnaireModel
+)
+async def put_questionnaire(
+        user_id: UUID,
+        questionnaire_id: UUID,
+        request: Request,
+        questionnaire_in: QuestionnaireInModel = Body(...),
+        image: Optional[UploadFile] = None
+) -> QuestionnaireModel:
+    if user_id == questionnaire_in.author_id:
+        updated_questionnaire = await questionnaires_methods.update_questionnaire(
+            questionnaire_id=questionnaire_id,
+            questionnaire_in=questionnaire_in,
+            image=image,
+            request_url=str(request.url)
+        )
+        return updated_questionnaire
+
+    raise HTTPException(400, "author_id and user_id must be the same")
+
+
 @questionnaire_router.delete(
-    '/questionnaire/{questionnaire_id}',
+    '/{questionnaire_id}',
 )
 async def delete_questionnaire(
         user_id: UUID,
