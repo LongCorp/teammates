@@ -6,16 +6,16 @@ from uuid import UUID
 from fastapi import APIRouter
 from pydantic import TypeAdapter
 
-from src.models.models import QuestionnaireOut, GameEnum
+from src.models.models import QuestionnaireModel, GameEnum
 from src.entities.entities import DBEntities
 from src.database import questionnaires_methods
 
-questionnaires_router = APIRouter()
+questionnaires_router = APIRouter(prefix="/questionnaires")
 
 
 @questionnaires_router.get(
-    '/questionnaires',
-    response_model=List[QuestionnaireOut]
+    '/',
+    response_model=List[QuestionnaireModel]
 )
 async def get_questionnaires(
         user_id: UUID,
@@ -24,14 +24,14 @@ async def get_questionnaires(
         game: Optional[GameEnum] = None,
         author_id: Optional[UUID] = None,
         questionnaire_id: Optional[UUID] = None,
-) -> List[QuestionnaireOut] | str:
+) -> List[QuestionnaireModel] | str:
     questionnaires = await DBEntities.questionnaires_cache.get_questionnaires(
         user_id, game, author_id, questionnaire_id
     )
 
     try:
         if questionnaires[0] is None:
-            type_adapter = TypeAdapter(list[QuestionnaireOut])
+            type_adapter = TypeAdapter(list[QuestionnaireModel])
             questionnaires = await questionnaires_methods.get_questionnaires(
                 game=game, author_id=author_id, questionnaire_id=questionnaire_id
             )

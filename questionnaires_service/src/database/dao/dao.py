@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
 from src.database.dao.models import Base, User, Questionnaire
+from src.models.models import QuestionnaireModel
 
 T = TypeVar("T", bound=Base)
 
@@ -69,11 +70,11 @@ class UserDAO(BaseDAO[User]):
     model = User
 
     @classmethod
-    async def get_public_id_by_auth_id(cls, auth_id: UUID, session: AsyncSession):
+    async def get_public_id_by_auth_id(cls, auth_id: UUID, session: AsyncSession) -> UUID:
         try:
-            stmp = sa.select(cls.model.id).where(cls.model.auth_id == auth_id)
+            query = sa.select(cls.model.id).where(cls.model.auth_id == auth_id)
 
-            result = await session.execute(stmp)
+            result = await session.execute(query)
             record = result.scalar_one_or_none()
             return record
         except SQLAlchemyError as e:
@@ -82,3 +83,18 @@ class UserDAO(BaseDAO[User]):
 
 class QuestionnaireDAO(BaseDAO[Questionnaire]):
     model = Questionnaire
+
+    @classmethod
+    async def update_questionnaire_by_id(
+            cls,
+            session: AsyncSession,
+            questionnaire_id: UUID,
+            new_questionnaire: QuestionnaireModel
+    ) -> bool:
+        try:
+            query = sa.update(cls.model).where(cls.model.id == questionnaire_id).values(new_questionnaire.model_dump())
+            await session.execute(query)
+
+            return True
+        except SQLAlchemyError:
+            return False
