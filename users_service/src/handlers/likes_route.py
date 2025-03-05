@@ -20,6 +20,7 @@ async def get_liked_questionnaires(user_id: UUID) -> list[QuestionnaireOut]:
     questionnaires = await likes_methods.get_liked_questionnaires(liker_id=user_id)
     return questionnaires
 
+
 @likes_router.get("/like/users")
 async def get_liked_users(user_id: UUID) -> list[UserModel]:
     users_info = await likes_methods.get_liked_users(liker_id=user_id)

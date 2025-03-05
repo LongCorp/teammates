@@ -5,20 +5,20 @@ networks:
 
 services:
   questionnaires_service:
-    build:
-      context: .
-      dockerfile: ./questionnaires_service/Dockerfile
+    build: ./questionnaires_service
     container_name: questionnaires_service
+    volumes:
+      - ./questionnaires_service:/questionnaires_service
     ports:
       - '8000:8000'
     networks:
       - isolation-network
 
   auth_service:
-    build:
-      context: .
-      dockerfile: ./auth_service/Dockerfile
+    build: ./auth_service
     container_name: auth_service
+    volumes:
+      - ./auth_service:/auth_service
     ports:
       - '8100:8100'
     networks:
@@ -45,10 +45,10 @@ services:
       - isolation-network
 
   users_service:
-    build:
-      dockerfile: ./users_service/Dockerfile
-      context: .
+    build: ./users_service
     container_name: users_service
+    volumes:
+      - ./users_service:/users_service
     ports:
       - '8200:8200'
     networks:

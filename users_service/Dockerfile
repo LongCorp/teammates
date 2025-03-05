@@ -4,9 +4,6 @@ LABEL authors="mbchl"
 WORKDIR /users_service
 
 COPY . .
-COPY ./users_service .
-
-
 
 RUN pip install -r requirements.txt
 

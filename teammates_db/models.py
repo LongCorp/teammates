@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
-from teammates_db.enums import GameEnum
+from enums import GameEnum
 
 
 class Base(AsyncAttrs, DeclarativeBase):
