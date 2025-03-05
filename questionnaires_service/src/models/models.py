@@ -4,7 +4,7 @@ import json
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator, ConfigDict
-from teammates_db.enums import GameEnum
+from src.models.enums import GameEnum
 
 
 class QuestionnaireInModel(BaseModel):

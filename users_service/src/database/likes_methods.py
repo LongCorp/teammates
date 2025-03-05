@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from questionnaires_service.src.models.models import QuestionnaireOut
+from src.models.models import QuestionnaireOut
 from src.database.dao.dao import LikedQuestionnaireDAO, LikedUserDAO
 from src.database.dao.session_maker import connection
 from src.models.models import QuestionnaireLikeModel, UserLikeModel, UserModel

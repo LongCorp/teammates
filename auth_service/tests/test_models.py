@@ -12,7 +12,7 @@ def test_register_model_password_hashing():
     login = "test_login"
     password = "secure_password"
     model = RegisterModel(
-        login=login,
+        nickname=login,
         password=password,
         email="test@email.com"
     )
@@ -30,7 +30,7 @@ def test_register_model_email_validation_error():
 
     with pytest.raises(ValidationError):
         RegisterModel(
-            login=login,
+            nickname=login,
             password=password,
             email=email
         )
@@ -41,7 +41,7 @@ def test_login_model_password_hashing():
     password = "test_password"
 
     model = LoginModel(
-        login=login,
+        nickname=login,
         password=password,
     )
 
@@ -53,13 +53,13 @@ def test_login_model_password_hashing():
 
 def test_user_model_email_validation_error():
     nickname = "test_nickname"
-    public_id = 1
-    secret_id = str(uuid.uuid4())
+    public_id = uuid.uuid4()
+    auth_id = uuid.uuid4()
     email = "test@wrong_email"
     with pytest.raises(ValidationError):
         UserModel(
             nickname=nickname,
             public_id=public_id,
-            secret_id=secret_id,
+            auth_id=auth_id,
             email=email
         )

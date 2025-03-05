@@ -11,7 +11,7 @@ class TestRefreshToken:
         user = UserModel(
             nickname="test_user",
             public_id=123,
-            secret_id="a6224487-004e-4fda-9dc7-f9117a2d9bae",
+            auth_id="a6224487-004e-4fda-9dc7-f9117a2d9bae",
             email="test_user@email.com",
             description="test_user description",
         )
@@ -23,14 +23,14 @@ class TestRefreshToken:
     def test_creation_from_secret_id(self):
         secret_id = "a6224487-004e-4fda-9dc7-f9117a2d9bae"
 
-        token = RefreshToken.from_secret_id(secret_id, 86400)
+        token = RefreshToken.from_auth_id(secret_id, 86400)
         assert isinstance(token, RefreshToken)
 
     def test_get_secret_id(self):
         secret_id = "a6224487-004e-4fda-9dc7-f9117a2d9bae"
-        token = RefreshToken.from_secret_id(secret_id, 86400)
+        token = RefreshToken.from_auth_id(secret_id, 86400)
 
-        assert token.get_secret_id() == secret_id
+        assert token.get_auth_id() == secret_id
 
     def test_raise_decode_error(self):
         with pytest.raises(DecodeError):
@@ -51,7 +51,7 @@ class TestAccessToken:
     def test_creation_from_refresh_token(self):
         secret_id = "a6224487-004e-4fda-9dc7-f9117a2d9bae"
 
-        refresh_token = RefreshToken.from_secret_id(secret_id, 86400)
+        refresh_token = RefreshToken.from_auth_id(secret_id, 86400)
 
         access_token = AccessToken.from_refresh_token(refresh_token, 3600)
 
@@ -59,9 +59,9 @@ class TestAccessToken:
 
     def test_get_secret_id(self):
         secret_id = "a6224487-004e-4fda-9dc7-f9117a2d9bae"
-        refresh_token = RefreshToken.from_secret_id(secret_id, 86400)
+        refresh_token = RefreshToken.from_auth_id(secret_id, 86400)
         access_token = AccessToken.from_refresh_token(refresh_token, 3600)
-        assert access_token.get_secret_id() == secret_id
+        assert access_token.get_auth_id() == secret_id
 
     def test_raise_decode_error(self):
         with pytest.raises(DecodeError):

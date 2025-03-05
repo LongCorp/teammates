@@ -3,8 +3,7 @@ LABEL authors="decobraz"
 
 WORKDIR /questionnaires_service
 
-COPY ./teammates_db/ ./teammates_db
-COPY ./questionnaires_service .
+COPY . .
 
 RUN pip install -r requirements.txt
 

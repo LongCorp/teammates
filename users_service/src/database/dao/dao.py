@@ -8,8 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
-from src.database.dao.models import Base, User, Questionnaire
-from src.database.dao.models import LikedQuestionnaire, LikedUser
+from src.database.dao.models import Base, User, Questionnaire, LikedQuestionnaire, LikedUser
 
 T = TypeVar("T", bound=Base)
 
@@ -141,6 +140,7 @@ class LikedQuestionnaireDAO(BaseDAO[LikedQuestionnaire]):
             return result
         except SQLAlchemyError as e:
             raise e
+
 
 class LikedUserDAO(BaseDAO[LikedUser]):
     model = LikedUser
