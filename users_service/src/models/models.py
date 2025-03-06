@@ -14,6 +14,11 @@ class UserModel(BaseModel):
     description: Optional[str]
     image_path: Optional[str]
 
+class UserUpdateModel(BaseModel):
+    nickname: str
+    id: UUID
+    description: str
+
 
 class UserLikeModel(BaseModel):
     liked_by_id: UUID

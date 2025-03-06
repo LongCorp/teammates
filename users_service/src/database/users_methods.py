@@ -1,6 +1,7 @@
 import logging
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.dao.dao import UserDAO
@@ -51,3 +52,20 @@ async def get_user_by_nickname(nickname: str, session: AsyncSession) -> UserMode
     except Exception as e:
         logger.error("Can't get user by nickname for user %s", nickname, exc_info=e)
         return None
+
+
+@connection()
+async def update_profile_info(user_id: UUID, user: UserModel, session: AsyncSession) -> UserModel:
+    logger.info("Updating %s profile in db", user.id)
+    try:
+        result = await UserDAO.update_profile_info(
+            session=session,
+            user_id=user_id,
+            user=user
+        )
+
+        logger.info("Done updating %s profile in db", user.id)
+        return result
+    except Exception as e:
+        logger.error("Error while updating %s profile in db:", user.id, exc_info=e)
+        raise HTTPException(500)
