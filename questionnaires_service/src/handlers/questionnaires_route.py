@@ -30,7 +30,11 @@ async def get_questionnaires(
     )
 
     try:
-        if questionnaires[0] is None:
+        if author_id == user_id:
+            questionnaires = await questionnaires_methods.get_questionnaires(
+                game=game, author_id=author_id, questionnaire_id=questionnaire_id
+            )
+        elif questionnaires[0] is None:
             type_adapter = TypeAdapter(list[QuestionnaireModel])
             questionnaires = await questionnaires_methods.get_questionnaires(
                 game=game, author_id=author_id, questionnaire_id=questionnaire_id
