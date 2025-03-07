@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException, APIRouter, UploadFile
+from starlette.requests import Request
 
 from src.database import users_methods
 from src.models.models import UserModel, UserUpdateModel
@@ -11,7 +12,7 @@ from src.models.models import UserModel, UserUpdateModel
 logger = logging.getLogger(__name__)
 
 
-users_router = APIRouter()
+users_router = APIRouter(prefix="/users")
 
 
 @users_router.get("/profile",  response_model=UserModel)
@@ -39,14 +40,30 @@ async def update_profile(
         user_id: UUID,
         user_model: UserUpdateModel
 ) -> UserModel:
-    logger.info("Recieved request for updating %s's profile", user_model.id)
+    logger.info("Received request for updating %s profile", user_model.id)
     if user_id == user_model.id:
         updated_profile = await users_methods.update_profile_info(
             user_id=user_id,
             user=user_model
         )
-        logger.info("%s's profile updated", user_model.id)
+        logger.info("%s profile updated", user_model.id)
         return updated_profile
 
     raise HTTPException(400, "id in user_model and user_id must be the same")
 
+@users_router.put("/update/photo")
+async def update_profile_photo(
+        user_id: UUID,
+        image: UploadFile,
+        request: Request
+):
+    logger.info("Received request for updating %s profile photo", user_id)
+    image_path = await users_methods.update_profile_photo(
+        user_id=user_id,
+        image=image,
+        request_url=str(request.url)
+    )
+    return {
+        "user_id": user_id,
+        "image_path": image_path
+    }

@@ -107,6 +107,21 @@ class UserDAO(BaseDAO[User]):
         except SQLAlchemyError as e:
             raise e
 
+    @classmethod
+    async def update_profile_photo(
+            cls,
+            user_id: UUID,
+            image_path: str,
+            session: AsyncSession
+    ) -> bool:
+        query = sa.update(cls.model).where(cls.model.id == user_id).values(image_path=image_path)
+        try:
+            await session.execute(query)
+            return True
+        except SQLAlchemyError:
+            return False
+
+
 
 
 class QuestionnaireDAO(BaseDAO[Questionnaire]):
