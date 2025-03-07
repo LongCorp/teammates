@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
 from src.database.dao.models import Base, User, Questionnaire, LikedQuestionnaire, LikedUser
+from src.models.models import UserModel
 
 T = TypeVar("T", bound=Base)
 
@@ -90,6 +91,37 @@ class UserDAO(BaseDAO[User]):
             return result
         except SQLAlchemyError as e:
             raise e
+
+    @classmethod
+    async def update_profile_info(
+            cls,
+            user_id: UUID,
+            user: UserModel,
+            session: AsyncSession
+    ) -> bool:
+        try:
+            query = sa.update(cls.model).where(cls.model.id == user_id).values(user.model_dump())
+            await session.execute(query)
+            user = await  cls.find_one_or_none_by_id(user_id, session)
+            return user
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def update_profile_photo(
+            cls,
+            user_id: UUID,
+            image_path: str,
+            session: AsyncSession
+    ) -> bool:
+        query = sa.update(cls.model).where(cls.model.id == user_id).values(image_path=image_path)
+        try:
+            await session.execute(query)
+            return True
+        except SQLAlchemyError:
+            return False
+
+
 
 
 class QuestionnaireDAO(BaseDAO[Questionnaire]):

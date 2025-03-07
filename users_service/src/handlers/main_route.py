@@ -6,6 +6,7 @@ import aiohttp
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import Response
+from starlette.staticfiles import StaticFiles
 
 from src.config import auth_service_url
 from src.database import users_methods
@@ -16,6 +17,8 @@ app = FastAPI(
     title='TeamMates users API',
     contact={'name': 'LongCorp', 'email': 'LongCorp@gmail.com'},
 )
+
+app.mount("/users/profile_photos", StaticFiles(directory="./profile_photos"), name="profile_photos")
 
 async def authenticate_user(token: str) -> UUID | None:
     try:
@@ -36,7 +39,7 @@ async def authenticate_user(token: str) -> UUID | None:
 async def auth_middleware(request: Request, call_next):
     try:
         if ("/docs" in request.url.path or "/openapi.json" in request.url.path or
-                "/questionnaires_photos" in request.url.path or "/favicon.ico" in request.url.path):
+                "/profile_photos" in request.url.path or "/favicon.ico" in request.url.path):
             return await call_next(request)
 
         token = request.headers["Authorization"].split(" ")[1]
