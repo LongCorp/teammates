@@ -16,7 +16,7 @@ async def save_questionnaire_image(image: UploadFile | None, questionnaire_id: U
             async with aiofiles.open(path, "wb") as out_file:
                 content = await image.read()
                 await out_file.write(content)
-            server_path = "".join(start_path.split("/")[:-1]) + f"/questionnaires_photos/{questionnaire_id}.jpg"
+            server_path = "/".join(start_path.split("/")[:-1]) + f"/questionnaires_photos/{questionnaire_id}.jpg"
             return server_path
         except Exception as e:
             logger.error("Error while saving image", exc_info=e)

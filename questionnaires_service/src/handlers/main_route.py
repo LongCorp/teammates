@@ -20,7 +20,7 @@ app = FastAPI(
     contact={'name': 'LongCorp', 'email': 'LongCorp@gmail.com'},
 )
 
-app.mount("/questionnaires_photos", StaticFiles(directory="./questionnaires_photos"), name="questionnaires_photos")
+app.mount("/questionnaire/questionnaires_photos", StaticFiles(directory="./questionnaires_photos"), name="questionnaires_photos")
 
 auth_scheme = HTTPBearer(auto_error=True)
 
