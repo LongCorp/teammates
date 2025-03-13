@@ -1,20 +1,24 @@
 import asyncio
 import logging
+import os
 
 import uvicorn
 
-from src.entities.entities import LoggerHandlers
+from src.utils.utils import create_logs_folder
 from src.handlers.main_route import app
 from src.handlers.questionnaire_route import questionnaire_router
 from src.handlers.questionnaires_route import questionnaires_router
 
 
 def configure_logging():
+    create_logs_folder()
+    file_handler = logging.FileHandler("./logs/service.log")
+    console_handler = logging.StreamHandler()
     logging.basicConfig(
         level=logging.INFO,
         datefmt="%Y-%m-%d %H:%M:%S",
         format="[%(asctime)s] %(module)9s:%(lineno)3d %(levelname)5s - %(message)s",
-        handlers=[LoggerHandlers.file_handler, LoggerHandlers.console_handler]
+        handlers=[file_handler, console_handler]
     )
 
 
