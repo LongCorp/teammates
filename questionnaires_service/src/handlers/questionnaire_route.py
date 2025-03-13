@@ -12,7 +12,7 @@ questionnaire_router = APIRouter(prefix="/questionnaire")
 
 
 @questionnaire_router.post(
-    '/',
+    '',
     response_model=Optional[QuestionnaireModel],
 )
 async def post_questionnaire(

@@ -14,7 +14,7 @@ questionnaires_router = APIRouter(prefix="/questionnaires")
 
 
 @questionnaires_router.get(
-    '/',
+    '',
     response_model=List[QuestionnaireModel]
 )
 async def get_questionnaires(
