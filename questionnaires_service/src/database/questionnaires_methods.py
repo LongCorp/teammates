@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, UploadFile
 from pydantic import create_model
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.dao.dao import QuestionnaireDAO
@@ -39,7 +40,8 @@ async def get_questionnaires(
                                                   filters=FiltersModel(
                                                       game=game,
                                                       author_id=author_id,
-                                                      id=questionnaire_id)
+                                                      id=questionnaire_id),
+                                                  order_by_func=func.random()
                                                   )
         result = [QuestionnaireModel.model_validate(i) for i in records]
 

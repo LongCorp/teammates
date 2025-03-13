@@ -1,8 +1,8 @@
 from uuid import UUID
 
 from pydantic import BaseModel
-from sqlalchemy import select
-from typing import TypeVar, Generic
+from sqlalchemy import select, func
+from typing import TypeVar, Generic, Optional, Callable
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
@@ -27,13 +27,13 @@ class BaseDAO(Generic[T]):
             raise e
 
     @classmethod
-    async def find_all(cls, session: AsyncSession, filters: BaseModel | None):
+    async def find_all(cls, session: AsyncSession, filters: BaseModel | None, order_by_func: Optional[Callable] = None):
         if filters:
             filter_dict = filters.model_dump(exclude_none=True, exclude_unset=True)
         else:
             filter_dict = {}
         try:
-            query = select(cls.model).filter_by(**filter_dict)
+            query = select(cls.model).filter_by(**filter_dict).order_by(order_by_func)
             result = await session.execute(query)
             records = result.scalars().all()
             return records

@@ -34,3 +34,15 @@ def get_validated_dict_from_tuple(data: tuple) -> dict:
         'author_id': author_id,
         'game': game
     }
+
+
+def create_logs_folder():
+    log_dir = "logs/"
+    log_file = os.path.join(log_dir, "service.log")
+
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    if not os.path.exists(log_file):
+        with open(log_file, "w") as f:
+            f.write("")
