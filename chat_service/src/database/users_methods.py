@@ -3,8 +3,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.main_db.dao.dao import UserDAO
-from src.database.main_db.dao.session_maker import connection
+from src.database.dao.dao import UserDAO
+from src.database.dao.session_maker import connection
 
 logger = logging.getLogger(__name__)
 

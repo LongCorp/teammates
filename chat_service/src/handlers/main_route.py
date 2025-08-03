@@ -7,7 +7,7 @@ from fastapi.security.http import HTTPBearer
 from starlette import status
 
 from src.config import auth_service_url
-from src.database.main_db import users_methods
+from src.database import users_methods
 
 logger = logging.getLogger(__name__)
 
