@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
-from src.database.dao.models import Base, User
+from src.database.dao.models import Base, User, Message
 
 T = TypeVar("T", bound=Base)
 
@@ -77,3 +77,7 @@ class UserDAO(BaseDAO[User]):
             return record
         except SQLAlchemyError as e:
             raise e
+
+
+class MessageDAO(BaseDAO[Message]):
+    model = Message

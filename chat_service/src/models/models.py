@@ -28,3 +28,8 @@ class MessageModel(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class MessageFilter(BaseModel):
+    sender_id: UUID
+    receiver_id: UUID
