@@ -1,4 +1,5 @@
 version: v2.29.2-desktop.2
+
 networks:
   isolation-network:
     driver: bridge

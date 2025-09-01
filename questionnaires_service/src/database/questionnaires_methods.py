@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.dao.dao import QuestionnaireDAO
 from src.database.dao.session_maker import connection
 from src.models.models import GameEnum, QuestionnaireModel, QuestionnaireInModel
-from src.utils.utils import save_questionnaire_image
+from src.utils.utils import save_questionnaire_image, delete_questionnaire_photo
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +122,7 @@ async def delete_questionnaire(questionnaire_id: UUID, session: AsyncSession):
     logger.info("Start deleting questionnaire (%s) from db", questionnaire_id)
     try:
         deleted_status = await QuestionnaireDAO.delete_one_by_id(questionnaire_id, session=session)
+        delete_questionnaire_photo(questionnaire_id=questionnaire_id)
     except Exception as e:
         logger.error("Error while deleting questionnaire %s from db", questionnaire_id, exc_info=e)
         return False

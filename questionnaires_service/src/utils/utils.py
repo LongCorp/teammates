@@ -24,6 +24,12 @@ async def save_questionnaire_image(image: UploadFile | None, questionnaire_id: U
     return ""
 
 
+def delete_questionnaire_photo(questionnaire_id: UUID):
+    photo_path = f"./questionnaires_photos/{questionnaire_id}.jpg"
+    if os.path.exists(photo_path):
+        os.remove(photo_path)
+
+
 def get_validated_dict_from_tuple(data: tuple) -> dict:
     author_id, questionnaire_id, header, description, photo_path, game = data
     return {
