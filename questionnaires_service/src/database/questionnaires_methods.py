@@ -122,7 +122,7 @@ async def delete_questionnaire(questionnaire_id: UUID, session: AsyncSession):
     logger.info("Start deleting questionnaire (%s) from db", questionnaire_id)
     try:
         deleted_status = await QuestionnaireDAO.delete_one_by_id(questionnaire_id, session=session)
-        await delete_questionnaire_photo(questionnaire_id=questionnaire_id)
+        delete_questionnaire_photo(questionnaire_id=questionnaire_id)
     except Exception as e:
         logger.error("Error while deleting questionnaire %s from db", questionnaire_id, exc_info=e)
         return False
