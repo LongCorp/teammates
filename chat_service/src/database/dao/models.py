@@ -3,10 +3,11 @@ from datetime import datetime
 from typing import List
 from uuid import UUID
 
-from sqlalchemy import Uuid, func, String, CHAR, Text, Column, ForeignKey
+from sqlalchemy import Uuid, func, String, CHAR, Text, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.sql.sqltypes import Integer, Boolean
+
+from src.models.enums import GameEnum
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -15,6 +16,53 @@ class Base(AsyncAttrs, DeclarativeBase):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4())
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
+
+
+
+class Questionnaire(Base):
+    __tablename__ = 'questionnaires'
+
+    author_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
+    header: Mapped[str | None] = mapped_column(String(63))
+    description: Mapped[str] = mapped_column(Text)
+    image_path: Mapped[str | None] = mapped_column(String(255))
+    game: Mapped[GameEnum]
+
+    author: Mapped["User"] = relationship(
+        "User",
+        back_populates="questionnaires",
+        lazy="joined"
+    )
+
+
+class UserRefreshToken(Base):
+    __tablename__ = 'users_refresh_tokens'
+
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
+    refresh_token: Mapped[str] = mapped_column(String(500), unique=True)
+
+    user: Mapped["User"] = relationship(
+        back_populates="refresh_token",
+        uselist=False
+    )
+
+
+class LikedQuestionnaire(Base):
+    __tablename__ = 'liked_questionnaires'
+
+    liker_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
+    questionnaire_id: Mapped[str] = mapped_column(ForeignKey("questionnaires.id"))
+
+    questionnaire: Mapped["Questionnaire"] = relationship(
+        "Questionnaire",
+    )
+
+
+class LikedUser(Base):
+    __tablename__ = 'liked_users'
+
+    liked_by_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
+    liked_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
 
 
 class User(Base):

@@ -53,3 +53,13 @@ services:
       - '8200:8200'
     networks:
       - isolation-network
+
+  chat_service:
+    build: ./chat_service
+    container_name: chat_service
+    volumes:
+      - ./chat_service:/chat_service
+    ports:
+      - '8300:8300'
+    networks:
+      - isolation-network

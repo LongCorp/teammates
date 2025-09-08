@@ -15,16 +15,16 @@ class UserModel(BaseModel):
 
 
 class MessageModel(BaseModel):
-    id: int
     content: str = Field(..., max_length=5000)
-    sender_id: int
-    receiver_id: int
-    is_read: bool
-    created_at: datetime
-    updated_at: datetime
+    sender_id: UUID
+    receiver_id: UUID
+    is_read: bool = False
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    msg_type: str
 
-    sender: Optional[UserModel]
-    receiver: Optional[UserModel]
+    # sender: Optional[UserModel]
+    # receiver: Optional[UserModel]
 
     class Config:
         orm_mode = True

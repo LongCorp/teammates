@@ -4,6 +4,7 @@ import logging
 import uvicorn
 
 from src.entities.entities import LoggerHandlers
+from src.handlers.chat_route import chat_router
 from src.handlers.main_route import app
 
 
@@ -19,7 +20,7 @@ def configure_logging():
 async def main():
     app.include_router(chat_router)
     configure_logging()
-    config = uvicorn.Config(app=app, host="0.0.0.0", port=8000, loop="asyncio", reload=True)
+    config = uvicorn.Config(app=app, host="0.0.0.0", port=8300, loop="asyncio", reload=True)
     server = uvicorn.Server(config)
     await server.serve()
 

@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 
-from src.database.dao.models import Base, User, Message
+from src.database.dao.models import Base, User, Message  # , Message
 
 T = TypeVar("T", bound=Base)
 
