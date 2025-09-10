@@ -1,39 +1,74 @@
 import logging
-from typing import List
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
+from fastapi import Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.dao.dao import MessageDAO
 from src.database.dao.session_maker import connection
-from src.models.models import MessageModel, MessageFilter
+from src.models.models import MessageModel
+
 
 logger = logging.getLogger(__name__)
 
 
 @connection()
-async def get_all_chat_messages(
-        user_id: UUID,
-        interlocutor_id: UUID,
+async def add_message_to_database(
+        message: MessageModel,
         session: AsyncSession,
-) -> List[MessageModel]:
-    logger.info("Getting chat messages for user %s with interlocutor %d", user_id, interlocutor_id)
+):
+    logger.info("Adding message to database")
     try:
-        chat_messages_list = []
-        filter1 = MessageFilter(sender_id=interlocutor_id, receiver_id=user_id)
-        filter2 = MessageFilter(receiver_id=interlocutor_id, sender_id=user_id)
-        messages1 =  await MessageDAO.find_all(
+        await MessageDAO.add(
             session=session,
-            filters=filter1,
+            values=message
         )
-        messages2 = await MessageDAO.find_all(
-            session=session,
-            filters=filter2,
-        )
-        chat_messages_list.extend(map(lambda x: MessageModel.model_validate(x), messages1))
-        chat_messages_list.extend(map(lambda x: MessageModel.model_validate(x), messages2))
-        chat_messages_list.sort(key=lambda x: x.created_at)
-        return chat_messages_list
+        return True
     except Exception as e:
-        logger.exception("Failed to get chat messages for user %s with interlocutor %d:", user_id, exc_info=e)
+        logger.exception("Failed to add message to database", exc_info=e)
+        return False
+
+
+@connection()
+async def get_chat_messages(
+        user_id: UUID,
+        peer_id: UUID,
+        session: AsyncSession,
+        before: Optional[datetime] = None,
+        limit: int = Query(20, ge=1, le=100)
+):
+    logger.info("Getting chat messages from database")
+    try:
+        messages = await MessageDAO.get_messages(
+            session=session,
+            user_id=user_id,
+            before=before,
+            limit=limit,
+            peer_id=peer_id,
+        )
+        logger.info(messages)
+        messages = [MessageModel.model_validate(message, from_attributes=True) for message in messages]
+        return messages
+    except Exception as e:
+        logger.exception("Failed to get chat messages for %s with %s", user_id, peer_id, exc_info=e)
         return []
+
+
+@connection()
+async def mark_read_message(
+        user_id: UUID,
+        message_id: UUID,
+        session: AsyncSession,
+):
+    logger.info("Marking read message from database")
+    try:
+        status = await MessageDAO.mark_read_message(
+            session=session,
+            user_id=user_id,
+            message_id=message_id,
+        )
+        return status
+    except Exception as e:
+        logger.exception("Failed to mark read message %s for %s", message_id, user_id, exc_info=e)

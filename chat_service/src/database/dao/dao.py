@@ -1,8 +1,10 @@
-from typing import TypeVar, Generic
+from datetime import datetime
+from typing import TypeVar, Generic, Optional
 from uuid import UUID
 
+from fastapi import Query
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, or_, desc, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
@@ -81,3 +83,51 @@ class UserDAO(BaseDAO[User]):
 
 class MessageDAO(BaseDAO[Message]):
     model = Message
+
+    @classmethod
+    async def get_messages(
+            cls,
+            user_id: UUID,
+            peer_id: UUID,
+            before: Optional[datetime] = None,
+            limit: int = Query(20, ge=1, le=100),
+            session: AsyncSession = None
+    ):
+        try:
+            query = (
+                select(Message)
+                .where(
+                    or_(
+                        (Message.sender_id == user_id) & (Message.receiver_id == peer_id),
+                        (Message.sender_id == peer_id) & (Message.receiver_id == user_id),
+                    )
+                )
+            )
+            if before:
+                query = query.where(Message.created_at < before)
+
+            query = query.order_by(desc(Message.created_at)).limit(limit)
+
+            result = await session.execute(query)
+            messages = result.scalars().all()
+
+            return messages
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def mark_read_message(cls, session, user_id, message_id):
+        try:
+            query = (
+                update(Message)
+                .where(Message.id == message_id)
+                .where(Message.receiver_id == user_id)
+                .values(is_read=True)
+                .execution_options(synchronize_session="fetch")
+            )
+
+            result = await session.execute(query)
+
+            return result.rowcount
+        except SQLAlchemyError as e:
+            raise e

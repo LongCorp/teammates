@@ -14,7 +14,7 @@ from enums import GameEnum
 class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True
 
-    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4())
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 
@@ -57,6 +57,9 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    sent_messages: Mapped[List["Message"]] = relationship(back_populates="sender")
+    received_messages: Mapped[List["Message"]] = relationship(back_populates="receiver")
+
 
 class UserRefreshToken(Base):
     __tablename__ = 'users_refresh_tokens'
@@ -91,7 +94,7 @@ class LikedUser(Base):
 class Message(Base):
     __tablename__ = 'messages'
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    msg_type: Mapped[str] = mapped_column(String(20), nullable=False)
 
     sender_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
     receiver_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
