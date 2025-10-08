@@ -21,4 +21,4 @@ TeamMates предоставляет следующие возможности:
 ## ✨ Авторы
 
 - **Efim Docenko** - [GitHub](https://github.com/EimDoc)
-- **TronaldDump** - [GitHub](https://github.com/thetronalddump) | [Email](mailto:mdev4work@gmail.com)
+- **Michael Bachyla** - [GitHub](https://github.com/mbchl-code) | [Email](mailto:mikhailbachyla@gmail.com)
