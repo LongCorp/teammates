@@ -8,9 +8,8 @@ from uuid import UUID
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from src.database import messages_methods
-from src.models.models import MessageModel
-from src.services.chat_manager import ConnectionManager
-
+from src.models.models import NewMessageModel
+from src.services.chat_manager import ConnectionManager, EventHandler
 
 logger = logging.getLogger(__name__)
 chat_router = APIRouter(
@@ -27,15 +26,10 @@ async def chat_websocket(
     ):
     try:
         await manager.connect(user_id, websocket)
-
+        handler = EventHandler(websocket, manager)
         while True:
             data = await websocket.receive_json()
-            receiver_id = UUID(data.get("receiver_id"))
-
-            content = MessageModel(**data)
-
-            await manager.send_to_room(receiver_id, content)
-            await messages_methods.add_message_to_database(content)
+            await handler.dispatch(data, user_id)
     except WebSocketDisconnect:
         await manager.disconnect(user_id, websocket)
     except Exception as e:
@@ -44,7 +38,7 @@ async def chat_websocket(
         await websocket.close()
 
 
-@chat_router.get("/messages", response_model=List[MessageModel])
+@chat_router.get("/messages", response_model=List[NewMessageModel])
 async def get_chat_messages(
     user_id: UUID,
     peer_id: UUID,
@@ -65,7 +59,10 @@ async def read_chat_message(
         user_id: UUID,
         message_id: UUID,
 ):
-    status = await messages_methods.mark_read_message(user_id, message_id)
+    status = await messages_methods.update_read_message(user_id, message_id)
     if status:
         return {"status": "success"}
     return {"status": "failed"}
+
+
+

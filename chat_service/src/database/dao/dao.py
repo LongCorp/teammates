@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import Query
 from pydantic import BaseModel
-from sqlalchemy import select, or_, desc, update
+from sqlalchemy import select, or_, desc, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
@@ -116,7 +116,12 @@ class MessageDAO(BaseDAO[Message]):
             raise e
 
     @classmethod
-    async def mark_read_message(cls, session, user_id, message_id):
+    async def mark_read_message(
+            cls,
+            session: AsyncSession,
+            user_id: UUID,
+            message_id: UUID
+    ):
         try:
             query = (
                 update(Message)
@@ -128,6 +133,47 @@ class MessageDAO(BaseDAO[Message]):
 
             result = await session.execute(query)
 
+            return result.rowcount
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def update_message(
+            cls,
+            session: AsyncSession,
+            user_id: UUID,
+            message_id: UUID,
+            new_value: str):
+        try:
+            query = (
+                update(Message)
+                .where(Message.id == message_id)
+                .where(Message.sender_id == user_id)
+                .values(is_changed=True, content=new_value)
+                .execution_options(synchronize_session="fetch")
+            )
+
+            result = await session.execute(query)
+            return result.rowcount
+        except SQLAlchemyError as e:
+            raise e
+
+    @classmethod
+    async def delete_message(
+            cls,
+            session: AsyncSession,
+            message_id: UUID,
+            sender_id: UUID,
+            receiver_id: UUID):
+        try:
+            query = (
+                delete(Message)
+                .where(Message.id == message_id)
+                .where(Message.sender_id == sender_id)
+                .where(Message.receiver_id == receiver_id)
+            )
+
+            result = await session.execute(query)
             return result.rowcount
         except SQLAlchemyError as e:
             raise e

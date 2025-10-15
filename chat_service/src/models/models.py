@@ -14,14 +14,14 @@ class UserModel(BaseModel):
     image_path: Optional[str]
 
 
-class MessageModel(BaseModel):
-    content: str = Field(..., max_length=5000)
+class NewMessageModel(BaseModel):
+    content: str = Field(...,min_length=1, max_length=5000)
     sender_id: UUID
     receiver_id: UUID
     is_read: bool = False
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-    msg_type: str
+    msg_type: str = "new_message"
 
     # sender: Optional[UserModel]
     # receiver: Optional[UserModel]
@@ -33,3 +33,30 @@ class MessageModel(BaseModel):
 class MessageFilter(BaseModel):
     sender_id: UUID
     receiver_id: UUID
+
+
+class UpdatedMessageModel(BaseModel):
+    content: str = Field(...,min_length=1, max_length=5000)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    sender_id: UUID
+    receiver_id: UUID
+    message_id: UUID
+    msg_type: str = "message_edited"
+
+
+class ReadMessageModel(BaseModel):
+    message_id: UUID
+    msg_type: str = "message_read"
+    receiver_id: UUID
+    sender_id: UUID
+
+class DeletedMessageModel(BaseModel):
+    message_id: UUID
+    msg_type: str = "message_deleted"
+    receiver_id: UUID
+    sender_id: UUID
+
+
+class ErrorModel(BaseModel):
+    data: dict
+    error_msg: str

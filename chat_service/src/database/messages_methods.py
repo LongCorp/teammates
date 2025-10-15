@@ -5,18 +5,18 @@ from uuid import UUID
 
 from fastapi import Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import session
 
 from src.database.dao.dao import MessageDAO
 from src.database.dao.session_maker import connection
-from src.models.models import MessageModel
-
+from src.models.models import NewMessageModel, DeletedMessageModel, UpdatedMessageModel, ReadMessageModel
 
 logger = logging.getLogger(__name__)
 
 
 @connection()
 async def add_message_to_database(
-        message: MessageModel,
+        message: NewMessageModel,
         session: AsyncSession,
 ):
     logger.info("Adding message to database")
@@ -49,7 +49,7 @@ async def get_chat_messages(
             peer_id=peer_id,
         )
         logger.info(messages)
-        messages = [MessageModel.model_validate(message, from_attributes=True) for message in messages]
+        messages = [NewMessageModel.model_validate(message, from_attributes=True) for message in messages]
         return messages
     except Exception as e:
         logger.exception("Failed to get chat messages for %s with %s", user_id, peer_id, exc_info=e)
@@ -57,18 +57,56 @@ async def get_chat_messages(
 
 
 @connection()
-async def mark_read_message(
-        user_id: UUID,
-        message_id: UUID,
+async def update_read_message(
+        message: ReadMessageModel,
         session: AsyncSession,
 ):
     logger.info("Marking read message from database")
     try:
         status = await MessageDAO.mark_read_message(
             session=session,
-            user_id=user_id,
-            message_id=message_id,
+            user_id=message.receiver_id,
+            message_id=message.message_id,
         )
         return status
     except Exception as e:
-        logger.exception("Failed to mark read message %s for %s", message_id, user_id, exc_info=e)
+        logger.exception("Failed to mark read message %s for %s", message.message_id, message.receiver_id, exc_info=e)
+
+
+@connection()
+async def update_edited_message(
+        message: UpdatedMessageModel,
+        session: AsyncSession,
+):
+    logger.info("Marking update message from database")
+    try:
+
+        status = await MessageDAO.update_message(
+            session=session,
+            user_id=message.sender_id,
+            message_id=message.message_id,
+            new_value=message.content
+        )
+        return status
+    except Exception as e:
+        logger.exception("Failed to mark update message %s for %s", message.message_id, message.sender_id, exc_info=e)
+        return False
+
+
+@connection()
+async def delete_message(
+        deleted_message: DeletedMessageModel,
+        session: AsyncSession
+):
+    logger.info("Deleting message from database")
+    try:
+        status = await MessageDAO.delete_message(
+            session=session,
+            message_id=deleted_message.message_id,
+            receiver_id=deleted_message.receiver_id,
+            sender_id=deleted_message.sender_id,
+        )
+        return status
+    except Exception as e:
+        logger.exception("Failed to delete message from %s", deleted_message.message_id, exc_info=e)
+        return False
